@@ -1,6 +1,6 @@
 COMPILER = gcc
 CCFLAGS = -Wall -g
-LINKFLAGS = -lcurses -lpthread
+LINKFLAGS = -lcurses -lpthread -lrt
 
 all: main
 
