@@ -1,4 +1,7 @@
 #include "interface.h"
+#include "terminal.h"
+#include "coremem.h"
+#include "cpu.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -14,17 +17,29 @@ int NSLEEP_EVERY = 3000;
 
 int main(int argc, const char* argv[]) {
 	pthread_t termthrd;
-	int rc = pthread_create(&termthrd, NULL, terminal, NULL);
+	setup_interface();
+	int rc = pthread_create(&termthrd, NULL, interface_loop, NULL);
 	if(rc) {
 		printf("ERROR; return code from pthread_create() is %d\n", rc);
 		exit(-1);
 	}
+
 	struct timespec start_time, end_time, req, rem;
 	int instruction_count = 0;
 	long ns_taken, ms_taken;
 	long ns_to_sleep_per_sec;
 	long ns_per_every = 0;
 	clock_gettime(CLOCK_MONOTONIC, &start_time);
+	//sleep(1);
+	debug_print("about to initializeDeviceIO\n");
+	tty_print("hi\n");
+	int halt = 0;
+
+	initializeDeviceIO();
+	configureDevice(DL11io, RCSR, XBUF);
+	initCpu();
+	debug_print("running fetchex loop\n");
+	tty_print("test\n");
 	while(1) {
 		{ //run at a certain number of instructions per seconds
 		instruction_count++;
@@ -47,7 +62,16 @@ int main(int argc, const char* argv[]) {
 			nanosleep(&req, &rem);
 		}
 		}
-		
+		//debug_print("fet");
+		//fetchex
+		if(!halt) {
+			//debug_print("fetchex");
+                        halt = fetchEx();
+                        //sethalt(halt);
+                        //lineclock();
+                }
+                //halt = gethalt();
+
 	}
 
 	return (EXIT_SUCCESS);
