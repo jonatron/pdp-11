@@ -16,48 +16,38 @@ PANEL  *top;
 
 pthread_mutex_t lock;
 
-int debug_print_callback(WINDOW *win, void *data);
-int tty_print_callback(WINDOW *win, void *data);
-int tty_printch_callback(WINDOW *win, void *data);
 void debug_print(char *str) {
-	//required to make thread safe
-	use_window(debug_subwindow, debug_print_callback, str);
-}
-int debug_print_callback(WINDOW *win, void *data) {
 	pthread_mutex_lock(&lock);
-	waddstr(debug_subwindow, (char*) data);
+	waddstr(debug_subwindow, str);
 	touchwin(my_wins[2]);
 	wrefresh(debug_subwindow);
 	pthread_mutex_unlock(&lock);
 }
 
 void tty_print(char *str) {
-	use_window(tty_subwindow, tty_print_callback, str);
-}
-int tty_print_callback(WINDOW *win, void *data) {
+	return;
 	pthread_mutex_lock(&lock);
-	waddstr(tty_subwindow, (char*) data);
+	waddstr(tty_subwindow, str);
 	touchwin(my_wins[0]);
 	wrefresh(tty_subwindow);
 	pthread_mutex_unlock(&lock);
+
 }
 
 void tty_printch(char ch) {
-	use_window(tty_subwindow, tty_printch_callback, ch);
-}
-int tty_printch_callback(WINDOW *win, void *data) {
+	return;
 	pthread_mutex_lock(&lock);
-	waddch(tty_subwindow, (char*) data);
+	waddch(tty_subwindow, ch);
 	touchwin(my_wins[0]);
 	wrefresh(tty_subwindow);
 	pthread_mutex_unlock(&lock);
-
 }
 
 
 void setup_interface() {
 
 	pthread_mutex_init(&lock, NULL);
+	pthread_mutex_lock(&lock);
 
 	/* Initialize curses */
 	initscr();
@@ -94,18 +84,29 @@ void setup_interface() {
 	doupdate();
 
 	top = my_panels[2];
+
+	pthread_mutex_unlock(&lock);
+
 }
 void *interface_loop() {
 	int ch;
-	while((ch = getch()) != KEY_F(1))
-	{	switch(ch)
+	while(ch != KEY_F(1))
+	{
+		pthread_mutex_lock(&lock);
+		ch = getch();
+		pthread_mutex_unlock(&lock);
+		switch(ch)
 		{	case 9:
 				top = (PANEL *)panel_userptr(top);
+				pthread_mutex_lock(&lock);
 				top_panel(top);
+				pthread_mutex_unlock(&lock);
 				break;
 		}
+		pthread_mutex_lock(&lock);
 		update_panels();
 		doupdate();
+		pthread_mutex_unlock(&lock);
 	}
 	endwin();
 	return 0;
@@ -133,7 +134,6 @@ void init_wins(WINDOW **wins, int n)
 				sprintf(label, "Debug");
 				debug_subwindow = derwin(wins[i], NLINES - 4, NCOLS - 4, 3, 2);
 				scrollok(debug_subwindow, 1);
-				waddstr(debug_subwindow, "omg test wtf");
 				break;
 		}
 		win_show(wins[i], label, i + 1);
