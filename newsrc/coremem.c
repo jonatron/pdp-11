@@ -4,6 +4,9 @@
  * Memory of the simulated machine
  *  Includes accessor and modifier functions
  */
+
+//size of char 1 short 2 int 4 long 8
+//             8       16    32     64
  
 #include <stdio.h>
 #include <string.h>
@@ -27,23 +30,23 @@
 #define getDeviceAddr(addr) ((addr - IOSTART) / 2)
 
 /* 16-bit Machine Memory */
-unsigned char memory[MEMSIZE];
+uint8_t memory[MEMSIZE];
 
 /* Array of IO functions */
-unsigned short (*currentFunc[4096]) (const char *, unsigned int, unsigned short);
+uint16_t (*currentFunc[4096]) (const char *, unsigned int, uint16_t);
 
 /* Try a union*/
 union memory {
 
-  unsigned char byte[MEMSIZE]; /* Access one byte of memory */
-  unsigned short word[MEMSIZE]; /* Access one word of memory */
+  uint8_t byte[MEMSIZE]; /* Access one byte of memory */
+  uint16_t word[MEMSIZE]; /* Access one word of memory */
 } PDPMem;
 
 /* Get the contents of memory location */
-unsigned char inline getByte(unsigned int addr) {
+uint8_t inline getByte(unsigned int addr) {
   
   unsigned int deviceAddr = 0; /* 18-bit Device Address */
-  unsigned short regValue = 0; /* Current register word value */
+  uint16_t regValue = 0; /* Current register word value */
   
   /* Address in Device IO Space */
   if (isDeviceAddr(addr)) {
@@ -52,7 +55,7 @@ unsigned char inline getByte(unsigned int addr) {
     deviceAddr = addr | 0600000;
   
     // Mapping of Device addresses to IO function addresses
-    unsigned short ioAddr = getDeviceAddr(deviceAddr);
+    uint16_t ioAddr = getDeviceAddr(deviceAddr);
     
       // Perform IO request if function has been registered
       if (*currentFunc[ioAddr] != 0) {
@@ -82,12 +85,12 @@ unsigned char inline getByte(unsigned int addr) {
 }
 
 /* Set the contents of memory location */
-void inline setByte(unsigned int addr, unsigned char value) {
+void inline setByte(unsigned int addr, uint8_t value) {
 
   unsigned int deviceAddr = 0; /* 18-bit Device Address */
-  unsigned short word = 0; /* New Register Value */
-  unsigned char lowByte = 0;
-  unsigned char highByte = 0;
+  uint16_t word = 0; /* New Register Value */
+  uint8_t lowByte = 0;
+  uint8_t highByte = 0;
   
   /* Address in Device IO Space */
   if (isDeviceAddr(addr)) {
@@ -96,7 +99,7 @@ void inline setByte(unsigned int addr, unsigned char value) {
     deviceAddr = addr | 0600000;
   
     // Mapping of Device addresses to IO function addresses
-    unsigned short ioAddr = getDeviceAddr(deviceAddr);
+    uint16_t ioAddr = getDeviceAddr(deviceAddr);
     
       // Perform IO request if function has been registered
       if (*currentFunc[ioAddr] != 0) {
@@ -133,12 +136,12 @@ void inline setByte(unsigned int addr, unsigned char value) {
 }
 
 /* Get the contents of memory location */
-unsigned short getWord(unsigned int addr) {
+uint16_t getWord(unsigned int addr) {
 
   /* need a word and a byte */
-  unsigned short word = 0;
-  unsigned char lowByte;
-  unsigned char highByte;
+  uint16_t word = 0;
+  uint8_t lowByte;
+  uint8_t highByte;
 
   /* Check address of word we're getting is on an even boundary */
   if (isWord(addr)) {
@@ -177,12 +180,12 @@ unsigned short getWord(unsigned int addr) {
 }
 
 /* Set the contents of memory location */
-void setWord(unsigned int addr, unsigned short newWord) {
+void setWord(unsigned int addr, uint16_t newWord) {
 
   /* need a word and a byte */
-  unsigned short word = 0;
-  unsigned char lowByte;
-  unsigned char highByte;
+  uint16_t word = 0;
+  uint8_t lowByte;
+  uint8_t highByte;
 
   /* Check address of word we're setting is on an even boundary */
   if (isWord(addr)) {
@@ -226,7 +229,7 @@ void initializeDeviceIO(void) {
 /* Configure the address range used by an IO device */
 int8_t configureDevice(uint16_t (*deviceFunction) (const char *, uint32_t, uint16_t), uint32_t startAddr, uint32_t endAddr) {
 
-//char configureDevice(unsigned short (*deviceFunction) (const char *, unsigned int, unsigned short), unsigned int startAddr, unsigned int endAddr) {
+//char configureDevice(uint16_t (*deviceFunction) (const char *, unsigned int, uint16_t), unsigned int startAddr, unsigned int endAddr) {
 
   // Ensure device range start and end are valid words
   if ((!isWord(startAddr)) || (!isWord(endAddr)))
@@ -245,7 +248,7 @@ int8_t configureDevice(uint16_t (*deviceFunction) (const char *, uint32_t, uint1
 }
 
 /* Print the contents of memory locations in a set range as bytes or words */
-void printMem(const char * type, unsigned short startAddr, unsigned short endAddr) {
+void printMem(const char * type, uint16_t startAddr, uint16_t endAddr) {
 
   int i = 0;
 
@@ -288,7 +291,7 @@ void printMem(const char * type, unsigned short startAddr, unsigned short endAdd
 }
 
 /* Memory Mapped IO */
-unsigned short io(const char * command, unsigned int addr, unsigned short newWord) {
+uint16_t io(const char * command, unsigned int addr, uint16_t newWord) {
 
   unsigned int deviceAddr = 0;
 
@@ -296,7 +299,7 @@ unsigned short io(const char * command, unsigned int addr, unsigned short newWor
   deviceAddr = addr | 0600000;
 
   // Mapping of Device addresses to IO function addresses
-  unsigned short ioAddr = getDeviceAddr(deviceAddr);
+  uint16_t ioAddr = getDeviceAddr(deviceAddr);
 
   // Perform IO request if function has been registered
   if (*currentFunc[ioAddr] != 0) {
@@ -322,7 +325,7 @@ void busError(void) {
 
     // Generate new processor status word
     struct Psw word;
-    unsigned short newWord = 0;
+    uint16_t newWord = 0;
     
     word.C = 0;
     word.V = 0;

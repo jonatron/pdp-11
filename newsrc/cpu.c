@@ -363,11 +363,11 @@ int fetchEx(void) {
 		uint16_t dst = IR & 077;
 		
 		int16_t preV;
-		signed char preVByte;
+		int8_t preVByte;
 
 						
 		int16_t result;
-		signed char resultByte;
+		int8_t resultByte;
  
 		//printf("single op\n");
 		//waddstr(iface,"\nIn Single Operand\n");

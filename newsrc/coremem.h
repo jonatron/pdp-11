@@ -8,21 +8,21 @@
 
 #define GETBYTE(addr) (((addr <= MEMSIZE) && (addr >= 0)) ? 0 : memory[addr])
 
-unsigned char inline getByte(unsigned int addr);
+uint8_t inline getByte(uint32_t addr);
 
-void inline setByte(unsigned int addr, unsigned char value);
+void inline setByte(uint32_t addr, uint8_t value);
 
-unsigned short getWord(unsigned int addr);
+uint16_t getWord(uint32_t addr);
 
-void setWord(unsigned int addr, unsigned short value);
+void setWord(uint32_t addr, uint16_t value);
 
 /* Union functions */
-unsigned char getByteU(unsigned short addr);
+uint8_t getByteU(uint16_t addr);
 
-unsigned char setByteU(unsigned short addr, unsigned char value);
+uint8_t setByteU(uint16_t addr, uint8_t value);
 
 /* Debugging function */
-void printMem(const char * type, unsigned short startAddr, unsigned short endAddr);
+void printMem(const char * type, uint16_t startAddr, uint16_t endAddr);
 
 /* Memory Mapped IO functions */
 
@@ -31,7 +31,7 @@ void initializeDeviceIO(void);
 
 int8_t configureDevice(uint16_t (*deviceFunction) (const char *, uint32_t, uint16_t), uint32_t startAddr, uint32_t endAddr);
 
-unsigned short io(const char * command, unsigned int addr, unsigned short newWord);
+uint16_t io(const char * command, uint32_t addr, uint16_t newWord);
 
 /* Interrupts */
 
