@@ -45,7 +45,7 @@ union memory {
 /* Get the contents of memory location */
 uint8_t inline getByte(unsigned int addr) {
 
-	unsigned int deviceAddr = 0; /* 18-bit Device Address */
+	uint32_t deviceAddr = 0; /* 18-bit Device Address */
 	uint16_t regValue = 0; /* Current register word value */
 
 	/* Address in Device IO Space */
@@ -83,9 +83,9 @@ uint8_t inline getByte(unsigned int addr) {
 }
 
 /* Set the contents of memory location */
-void inline setByte(unsigned int addr, uint8_t value) {
+void inline setByte(uint32_t addr, uint8_t value) {
 
-	unsigned int deviceAddr = 0; /* 18-bit Device Address */
+	uint32_t deviceAddr = 0; /* 18-bit Device Address */
 	uint16_t word = 0; /* New Register Value */
 	uint8_t lowByte = 0;
 	uint8_t highByte = 0;
@@ -132,7 +132,7 @@ void inline setByte(unsigned int addr, uint8_t value) {
 }
 
 /* Get the contents of memory location */
-uint16_t getWord(unsigned int addr) {
+uint16_t getWord(uint32_t addr) {
 
 	/* need a word and a byte */
 	uint16_t word = 0;
@@ -175,7 +175,7 @@ uint16_t getWord(unsigned int addr) {
 }
 
 /* Set the contents of memory location */
-void setWord(unsigned int addr, uint16_t newWord) {
+void setWord(uint32_t addr, uint16_t newWord) {
 
 	/* need a word and a byte */
 	uint16_t word = 0;

@@ -320,7 +320,7 @@ int fetchEx(void) {
 	//Branches
 	else if ((IR & 0103400)) {
 		uint16_t op = IR >> 8;
-		char offset = IR & 0xFF;
+		int8_t offset = IR & 0xFF;
 		//printf("Branch\n");
 		//waddstr(iface,"\nIn Branches\n");
 		//wrefresh(iface);
