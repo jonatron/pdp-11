@@ -44,36 +44,36 @@ int main(int argc, const char* argv[]) {
 	sprintf(buf, "char %zu short %zu int %zu long %zu", sizeof(char), sizeof(short), sizeof(int), sizeof(long));
 	debug_print(buf);
 	while(1) {
-		{ //run at a certain number of instructions per seconds
-		instruction_count++;
-		if(instruction_count % INSTRUCTIONS_PER_SEC == 0 && ns_per_every == 0) {
-			clock_gettime(CLOCK_MONOTONIC, &end_time);
-			ns_taken = ((end_time.tv_sec - start_time.tv_sec) * 1000000000) + (end_time.tv_nsec - start_time.tv_nsec);
-			ms_taken = ns_taken / 1000000;
-			ns_to_sleep_per_sec = (1000000000 - ns_taken);
-			if(ns_to_sleep_per_sec < 100) {
-				ns_per_every = -1; //don't sleep - unlikely to happen
+		{
+			//run at a certain number of instructions per seconds
+			instruction_count++;
+			if(instruction_count % INSTRUCTIONS_PER_SEC == 0 && ns_per_every == 0) {
+				clock_gettime(CLOCK_MONOTONIC, &end_time);
+				ns_taken = ((end_time.tv_sec - start_time.tv_sec) * 1000000000) + (end_time.tv_nsec - start_time.tv_nsec);
+				ms_taken = ns_taken / 1000000;
+				ns_to_sleep_per_sec = (1000000000 - ns_taken);
+				if(ns_to_sleep_per_sec < 100) {
+					ns_per_every = -1; //don't sleep - unlikely to happen
+				} else {
+					ns_per_every = ns_to_sleep_per_sec / (INSTRUCTIONS_PER_SEC / NSLEEP_EVERY);
+					req.tv_sec = 0;
+					req.tv_nsec = ns_per_every;
+					//clock_gettime(CLOCK_MONOTONIC, &start_time);
+				}
 			}
-			else {
-				ns_per_every = ns_to_sleep_per_sec / (INSTRUCTIONS_PER_SEC / NSLEEP_EVERY);
-				req.tv_sec = 0;
-				req.tv_nsec = ns_per_every;
-				//clock_gettime(CLOCK_MONOTONIC, &start_time);
+			if(instruction_count % NSLEEP_EVERY == 0 && ns_per_every > 0) {
+				nanosleep(&req, &rem);
 			}
-		}
-		if(instruction_count % NSLEEP_EVERY == 0 && ns_per_every > 0) {
-			nanosleep(&req, &rem);
-		}
 		}
 		//debug_print("fet");
 		//fetchex
 		if(!halt) {
 			//debug_print("fetchex");
-                        halt = fetchEx();
-                        //sethalt(halt);
-                        //lineclock();
-                }
-                //halt = gethalt();
+			halt = fetchEx();
+			//sethalt(halt);
+			//lineclock();
+		}
+		//halt = gethalt();
 
 	}
 

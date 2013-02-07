@@ -88,18 +88,17 @@ void setup_interface() {
 }
 void *interface_loop() {
 	int ch;
-	while(ch != KEY_F(1))
-	{
+	while(ch != KEY_F(1)) {
 		pthread_mutex_lock(&lock);
 		ch = getch();
 		pthread_mutex_unlock(&lock);
-		switch(ch)
-		{	case 9:
-				top = (PANEL *)panel_userptr(top);
-				pthread_mutex_lock(&lock);
-				top_panel(top);
-				pthread_mutex_unlock(&lock);
-				break;
+		switch(ch) {
+		case 9:
+			top = (PANEL *)panel_userptr(top);
+			pthread_mutex_lock(&lock);
+			top_panel(top);
+			pthread_mutex_unlock(&lock);
+			break;
 		}
 		pthread_mutex_lock(&lock);
 		update_panels();
@@ -111,28 +110,28 @@ void *interface_loop() {
 }
 
 /* Put all the windows */
-void init_wins(WINDOW **wins, int n)
-{	int x, y, i;
+void init_wins(WINDOW **wins, int n) {
+	int x, y, i;
 	char label[80];
 
 	y = 2;
 	x = 10;
-	for(i = 0; i < n; ++i)
-	{	wins[i] = newwin(NLINES, NCOLS, y, x);
+	for(i = 0; i < n; ++i) {
+		wins[i] = newwin(NLINES, NCOLS, y, x);
 		switch(i) {
-			case 0:
-				sprintf(label, "PDP tty");
-				tty_subwindow = derwin(wins[i], NLINES - 4, NCOLS - 4, 3, 2);
-				scrollok(tty_subwindow, 1);
-				break;
-			case 1:
-				sprintf(label, "Emulator Interface");
-				break;
-			case 2:
-				sprintf(label, "Debug");
-				debug_subwindow = derwin(wins[i], NLINES - 4, NCOLS - 4, 3, 2);
-				scrollok(debug_subwindow, 1);
-				break;
+		case 0:
+			sprintf(label, "PDP tty");
+			tty_subwindow = derwin(wins[i], NLINES - 4, NCOLS - 4, 3, 2);
+			scrollok(tty_subwindow, 1);
+			break;
+		case 1:
+			sprintf(label, "Emulator Interface");
+			break;
+		case 2:
+			sprintf(label, "Debug");
+			debug_subwindow = derwin(wins[i], NLINES - 4, NCOLS - 4, 3, 2);
+			scrollok(debug_subwindow, 1);
+			break;
 		}
 		win_show(wins[i], label, i + 1);
 		y += 3;
@@ -141,8 +140,8 @@ void init_wins(WINDOW **wins, int n)
 }
 
 /* Show the window with a border and a label */
-void win_show(WINDOW *win, char *label, int label_color)
-{	int startx, starty, height, width;
+void win_show(WINDOW *win, char *label, int label_color) {
+	int startx, starty, height, width;
 
 	getbegyx(win, starty, startx);
 	getmaxyx(win, height, width);
@@ -155,8 +154,8 @@ void win_show(WINDOW *win, char *label, int label_color)
 	print_in_middle(win, 1, 0, width, label, COLOR_PAIR(label_color));
 }
 
-void print_in_middle(WINDOW *win, int starty, int startx, int width, char *string, chtype color)
-{	int length, x, y;
+void print_in_middle(WINDOW *win, int starty, int startx, int width, char *string, chtype color) {
+	int length, x, y;
 	float temp;
 
 	if(win == NULL)

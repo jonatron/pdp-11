@@ -7,7 +7,7 @@
 
 //size of char 1 short 2 int 4 long 8
 //             8       16    32     64
- 
+
 #include <stdio.h>
 #include <string.h>
 #include "cpu.h"
@@ -38,192 +38,186 @@ uint16_t (*currentFunc[4096]) (const char *, unsigned int, uint16_t);
 /* Try a union*/
 union memory {
 
-  uint8_t byte[MEMSIZE]; /* Access one byte of memory */
-  uint16_t word[MEMSIZE]; /* Access one word of memory */
+	uint8_t byte[MEMSIZE]; /* Access one byte of memory */
+	uint16_t word[MEMSIZE]; /* Access one word of memory */
 } PDPMem;
 
 /* Get the contents of memory location */
 uint8_t inline getByte(unsigned int addr) {
-  
-  unsigned int deviceAddr = 0; /* 18-bit Device Address */
-  uint16_t regValue = 0; /* Current register word value */
-  
-  /* Address in Device IO Space */
-  if (isDeviceAddr(addr)) {
-  
-    /* Convert 16-bit address to 18-bit IO address adding extra bits*/
-    deviceAddr = addr | 0600000;
-  
-    // Mapping of Device addresses to IO function addresses
-    uint16_t ioAddr = getDeviceAddr(deviceAddr);
-    
-      // Perform IO request if function has been registered
-      if (*currentFunc[ioAddr] != 0) {
-  
-        /* Read word from device using address specified */
-  
-        /* Device Address is odd, read high byte */
-        if (deviceAddr % 2 != 0) {
-          regValue = currentFunc[ioAddr]("read", deviceAddr - 1, 0);
-          return regValue >> 8;
-        }
-        else {
-          regValue = currentFunc[ioAddr]("read", deviceAddr, 0);
-          return regValue;
-        }
-      }
-      /* Device invalid - Interrupt Bus Error */
-      else {
-        busError();
-        return 0;
-      }
-  }
-  else {
-    /* Normal Memory access */
-    return memory[addr];
-  }
+
+	unsigned int deviceAddr = 0; /* 18-bit Device Address */
+	uint16_t regValue = 0; /* Current register word value */
+
+	/* Address in Device IO Space */
+	if (isDeviceAddr(addr)) {
+
+		/* Convert 16-bit address to 18-bit IO address adding extra bits*/
+		deviceAddr = addr | 0600000;
+
+		// Mapping of Device addresses to IO function addresses
+		uint16_t ioAddr = getDeviceAddr(deviceAddr);
+
+		// Perform IO request if function has been registered
+		if (*currentFunc[ioAddr] != 0) {
+
+			/* Read word from device using address specified */
+
+			/* Device Address is odd, read high byte */
+			if (deviceAddr % 2 != 0) {
+				regValue = currentFunc[ioAddr]("read", deviceAddr - 1, 0);
+				return regValue >> 8;
+			} else {
+				regValue = currentFunc[ioAddr]("read", deviceAddr, 0);
+				return regValue;
+			}
+		}
+		/* Device invalid - Interrupt Bus Error */
+		else {
+			busError();
+			return 0;
+		}
+	} else {
+		/* Normal Memory access */
+		return memory[addr];
+	}
 }
 
 /* Set the contents of memory location */
 void inline setByte(unsigned int addr, uint8_t value) {
 
-  unsigned int deviceAddr = 0; /* 18-bit Device Address */
-  uint16_t word = 0; /* New Register Value */
-  uint8_t lowByte = 0;
-  uint8_t highByte = 0;
-  
-  /* Address in Device IO Space */
-  if (isDeviceAddr(addr)) {
-  
-    /* Convert 16-bit address to 18-bit IO address adding extra bits*/
-    deviceAddr = addr | 0600000;
-  
-    // Mapping of Device addresses to IO function addresses
-    uint16_t ioAddr = getDeviceAddr(deviceAddr);
-    
-      // Perform IO request if function has been registered
-      if (*currentFunc[ioAddr] != 0) {
-  
-        /* Generate a new 16 bit word using new byte value */
-        
-        /* Device Address is odd, set high byte */
-        if (deviceAddr % 2 != 0) {
-          highByte = value;
-          lowByte = currentFunc[ioAddr]("read", deviceAddr - 1, 0);
-          
-          word = word | highByte;
-          word = word << 8;
-          word = word | lowByte;
-          
-          /* Write to device using address specified */
-          currentFunc[ioAddr]("write", deviceAddr - 1, word);
-        }
-        else {
-          /* Write to device using address specified */
-          currentFunc[ioAddr]("write", deviceAddr, value);
-        }
-        
-      }
-      /* Device invalid - Interrupt Bus Error */
-      else
-        busError();
-  }
-  else {
-  
-    /* Normal memory access */
-    memory[addr] = value;
-  }
+	unsigned int deviceAddr = 0; /* 18-bit Device Address */
+	uint16_t word = 0; /* New Register Value */
+	uint8_t lowByte = 0;
+	uint8_t highByte = 0;
+
+	/* Address in Device IO Space */
+	if (isDeviceAddr(addr)) {
+
+		/* Convert 16-bit address to 18-bit IO address adding extra bits*/
+		deviceAddr = addr | 0600000;
+
+		// Mapping of Device addresses to IO function addresses
+		uint16_t ioAddr = getDeviceAddr(deviceAddr);
+
+		// Perform IO request if function has been registered
+		if (*currentFunc[ioAddr] != 0) {
+
+			/* Generate a new 16 bit word using new byte value */
+
+			/* Device Address is odd, set high byte */
+			if (deviceAddr % 2 != 0) {
+				highByte = value;
+				lowByte = currentFunc[ioAddr]("read", deviceAddr - 1, 0);
+
+				word = word | highByte;
+				word = word << 8;
+				word = word | lowByte;
+
+				/* Write to device using address specified */
+				currentFunc[ioAddr]("write", deviceAddr - 1, word);
+			} else {
+				/* Write to device using address specified */
+				currentFunc[ioAddr]("write", deviceAddr, value);
+			}
+
+		}
+		/* Device invalid - Interrupt Bus Error */
+		else
+			busError();
+	} else {
+
+		/* Normal memory access */
+		memory[addr] = value;
+	}
 }
 
 /* Get the contents of memory location */
 uint16_t getWord(unsigned int addr) {
 
-  /* need a word and a byte */
-  uint16_t word = 0;
-  uint8_t lowByte;
-  uint8_t highByte;
+	/* need a word and a byte */
+	uint16_t word = 0;
+	uint8_t lowByte;
+	uint8_t highByte;
 
-  /* Check address of word we're getting is on an even boundary */
-  if (isWord(addr)) {
+	/* Check address of word we're getting is on an even boundary */
+	if (isWord(addr)) {
 
-    /* Address in IO Space */
-    if (isDeviceAddr(addr)) {
-    
-      // Read word from device register
-      return io("read", addr, 0);
-    }
-    else {
-      /* Normal word memory access */
-    
-      /* Get low order byte and high order byte */
-      lowByte = getByte(addr);
-      highByte = getByte(addr + 1);
+		/* Address in IO Space */
+		if (isDeviceAddr(addr)) {
 
-      /* Modify word to first put high byte into bottom of word */
-      word = word | highByte;
-  
-      /* Shift left to move the high byte ready for the low byte */
-      word = word << 8;
-  
-      /* Now put low byte into the free space */
-      word = word | lowByte;
-  
-      return word;
-    }
-  }
-  /* Invalid access - Bus Error */
-  else {
-    busError();
-  }
+			// Read word from device register
+			return io("read", addr, 0);
+		} else {
+			/* Normal word memory access */
 
-  return 0;
+			/* Get low order byte and high order byte */
+			lowByte = getByte(addr);
+			highByte = getByte(addr + 1);
+
+			/* Modify word to first put high byte into bottom of word */
+			word = word | highByte;
+
+			/* Shift left to move the high byte ready for the low byte */
+			word = word << 8;
+
+			/* Now put low byte into the free space */
+			word = word | lowByte;
+
+			return word;
+		}
+	}
+	/* Invalid access - Bus Error */
+	else {
+		busError();
+	}
+
+	return 0;
 }
 
 /* Set the contents of memory location */
 void setWord(unsigned int addr, uint16_t newWord) {
 
-  /* need a word and a byte */
-  uint16_t word = 0;
-  uint8_t lowByte;
-  uint8_t highByte;
+	/* need a word and a byte */
+	uint16_t word = 0;
+	uint8_t lowByte;
+	uint8_t highByte;
 
-  /* Check address of word we're setting is on an even boundary */
-  if (isWord(addr)) {
-  
-    /* Address in IO Space */
-    if (isDeviceAddr(addr)) {
-    
-      // Write new word to device register
-      io("write", addr, newWord);
-    }
-    else {
-    
-      /* Normal Memory access */
+	/* Check address of word we're setting is on an even boundary */
+	if (isWord(addr)) {
 
-      /* Grab just the low order byte from the word */
-      lowByte = newWord;
-  
-      /* Shift word 8 places right to kick low byte off the end and take 
-  	high byte out of the bottom */
-      highByte = newWord >> 8;
+		/* Address in IO Space */
+		if (isDeviceAddr(addr)) {
 
-      setByte(addr, lowByte);
-      setByte(addr + 1, highByte);
-    }
-  }
-  /* Invalid access - Bus Error */
-  else {
-    busError();
-  }
+			// Write new word to device register
+			io("write", addr, newWord);
+		} else {
+
+			/* Normal Memory access */
+
+			/* Grab just the low order byte from the word */
+			lowByte = newWord;
+
+			/* Shift word 8 places right to kick low byte off the end and take
+			  	high byte out of the bottom */
+			highByte = newWord >> 8;
+
+			setByte(addr, lowByte);
+			setByte(addr + 1, highByte);
+		}
+	}
+	/* Invalid access - Bus Error */
+	else {
+		busError();
+	}
 }
 
 /* Initialize array of Device IO function pointers */
 void initializeDeviceIO(void) {
 
-  int i = 0;
-  
-  for (i = 0; i < 4096; i++)
-    currentFunc[i] = 0;
+	int i = 0;
+
+	for (i = 0; i < 4096; i++)
+		currentFunc[i] = 0;
 }
 
 /* Configure the address range used by an IO device */
@@ -231,123 +225,121 @@ int8_t configureDevice(uint16_t (*deviceFunction) (const char *, uint32_t, uint1
 
 //char configureDevice(uint16_t (*deviceFunction) (const char *, unsigned int, uint16_t), unsigned int startAddr, unsigned int endAddr) {
 
-  // Ensure device range start and end are valid words
-  if ((!isWord(startAddr)) || (!isWord(endAddr)))
-    return 0;
+	// Ensure device range start and end are valid words
+	if ((!isWord(startAddr)) || (!isWord(endAddr)))
+		return 0;
 
-  // Convert device access start address to an address in IO space
-  startAddr = getDeviceAddr(startAddr);
-  endAddr = getDeviceAddr(endAddr);
-  
-  // Loop through IO space addresses for this device to setup IO functions
-  int i = 0;
-  for (i = startAddr; i <= endAddr; i++)
-    currentFunc[i] = deviceFunction;
-    
-  return 1;
+	// Convert device access start address to an address in IO space
+	startAddr = getDeviceAddr(startAddr);
+	endAddr = getDeviceAddr(endAddr);
+
+	// Loop through IO space addresses for this device to setup IO functions
+	int i = 0;
+	for (i = startAddr; i <= endAddr; i++)
+		currentFunc[i] = deviceFunction;
+
+	return 1;
 }
 
 /* Print the contents of memory locations in a set range as bytes or words */
 void printMem(const char * type, uint16_t startAddr, uint16_t endAddr) {
 
-  int i = 0;
+	int i = 0;
 
-  printf("Memory status:\n");
-  printf("\n");
+	printf("Memory status:\n");
+	printf("\n");
 
-  // Select byte or word mode based on user input
-  if (strcmp(type, "byte") == 0) {
+	// Select byte or word mode based on user input
+	if (strcmp(type, "byte") == 0) {
 
-    printf("Byte view\n");
-    printf("-----------\n");
+		printf("Byte view\n");
+		printf("-----------\n");
 
-    //Loop through addresses from start to end address
-    for (i = startAddr; i <= endAddr; i++) {
+		//Loop through addresses from start to end address
+		for (i = startAddr; i <= endAddr; i++) {
 
-      printf("Address: %o", i);
-      printf("\t[ %d ]\n", getByte(i));
+			printf("Address: %o", i);
+			printf("\t[ %d ]\n", getByte(i));
 
-    }
-  }
-  else if (strcmp(type, "word") == 0) {
+		}
+	} else if (strcmp(type, "word") == 0) {
 
-    printf("Word view\n");
-    printf("-----------\n");
+		printf("Word view\n");
+		printf("-----------\n");
 
-    // Print column headings
-    printf("\t\tHigh Byte  Low Byte\n");
+		// Print column headings
+		printf("\t\tHigh Byte  Low Byte\n");
 
-    //Loop through addresses from start to end address
-    for (i = startAddr; i <= endAddr; i += 2) {
+		//Loop through addresses from start to end address
+		for (i = startAddr; i <= endAddr; i += 2) {
 
-      printf("Address: %o", i + 1);
-      printf("\t[ %d ]", getByte(i + 1));
-      printf("\t[ %d ]", getByte(i));
-      printf("\t\tAddress: %o\n", i);
+			printf("Address: %o", i + 1);
+			printf("\t[ %d ]", getByte(i + 1));
+			printf("\t[ %d ]", getByte(i));
+			printf("\t\tAddress: %o\n", i);
 
-    }
-  }
+		}
+	}
 
 }
 
 /* Memory Mapped IO */
 uint16_t io(const char * command, unsigned int addr, uint16_t newWord) {
 
-  unsigned int deviceAddr = 0;
+	unsigned int deviceAddr = 0;
 
-  /* Convert 16-bit address to 18-bit IO address adding extra bits*/
-  deviceAddr = addr | 0600000;
+	/* Convert 16-bit address to 18-bit IO address adding extra bits*/
+	deviceAddr = addr | 0600000;
 
-  // Mapping of Device addresses to IO function addresses
-  uint16_t ioAddr = getDeviceAddr(deviceAddr);
+	// Mapping of Device addresses to IO function addresses
+	uint16_t ioAddr = getDeviceAddr(deviceAddr);
 
-  // Perform IO request if function has been registered
-  if (*currentFunc[ioAddr] != 0) {
+	// Perform IO request if function has been registered
+	if (*currentFunc[ioAddr] != 0) {
 
-    if (strcmp(command, "read") == 0) {
-      /* Read from device using address specified */
-      return currentFunc[ioAddr]("read", deviceAddr, 0);
-    }
-    else if (strcmp(command, "write") == 0) {
-      /* Write to device using address specified */
-      currentFunc[ioAddr]("write", deviceAddr, newWord);
-    }
-  }
-  /* Device invalid - Interrupt Bus Error */
-  else
-    busError();
-    
-  return 0;
+		if (strcmp(command, "read") == 0) {
+			/* Read from device using address specified */
+			return currentFunc[ioAddr]("read", deviceAddr, 0);
+		} else if (strcmp(command, "write") == 0) {
+			/* Write to device using address specified */
+			currentFunc[ioAddr]("write", deviceAddr, newWord);
+		}
+	}
+	/* Device invalid - Interrupt Bus Error */
+	else
+		busError();
+
+	return 0;
 }
 
 /* Generate Bus Error interrupt */
 void busError(void) {
 
-    // Generate new processor status word
-    struct Psw word;
-    uint16_t newWord = 0;
-    
-    word.C = 0;
-    word.V = 0;
-    word.Z = 0;
-    word.N = 0;
-    word.T = 0;
-    word.unused = 0;
-    word.regSet = 0;
-    // Unused on PDP11/03
-    word.previousMode = 0;
-    word.currentMode = 0;
-    word.priority = 7;
+	// Generate new processor status word
+	struct Psw word;
+	uint16_t newWord = 0;
 
-    // Conver PSW to short to use its value
-    newWord = pswToShort(word);
+	word.C = 0;
+	word.V = 0;
+	word.Z = 0;
+	word.N = 0;
+	word.T = 0;
+	word.unused = 0;
+	word.regSet = 0;
+	// Unused on PDP11/03
+	word.previousMode = 0;
+	word.currentMode = 0;
+	word.priority = 7;
 
-    // Store new PSW in location 0000006 (Interrupt Vector +2W)
-    setWord(0000006, newWord);
-    
-    // Store Interrupt Service Routine location at Interrupt Vector address 0000004
-    setWord(0000004, 0);
+	// Conver PSW to short to use its value
+	newWord = pswToShort(word);
 
-    // Request Bus and Interrupt CPU
-    busRequest(&NPR, 0000004);
+	// Store new PSW in location 0000006 (Interrupt Vector +2W)
+	setWord(0000006, newWord);
+
+	// Store Interrupt Service Routine location at Interrupt Vector address 0000004
+	setWord(0000004, 0);
+
+	// Request Bus and Interrupt CPU
+	busRequest(&NPR, 0000004);
 }

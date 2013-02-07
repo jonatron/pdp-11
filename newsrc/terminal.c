@@ -12,7 +12,7 @@ function to be called when a key is pressed
 void on_keypress(unsigned char key) {
 	//transfer character to RBUF
 	rbuf = key;
-	
+
 	//if receiver done bit (7) is set, set overrun and error bit in RBUF (14 and 15)
 	if((rcsr & (1 << 7)) != 0) {
 		rbuf |= 1 << 14 | 1 << 15;
@@ -35,8 +35,7 @@ uint16_t DL11io(const char * command, uint32_t addr, uint16_t value) {
 		//clear overrun and error bit in RBUF (14 and 15)
 		rbuf &= ~(1 << 14 | 1 << 15);
 		return rbuf;
-	}
-	else if(!strcmp(command, "write") && addr == XBUF) {
+	} else if(!strcmp(command, "write") && addr == XBUF) {
 		//clear transmitter ready bit (7) in XCSR
 		xcsr &= ~(1 << 7);
 		//output - may be to socket later
@@ -49,11 +48,9 @@ uint16_t DL11io(const char * command, uint32_t addr, uint16_t value) {
 		//set transmitter ready bit (7) in XCSR
 		xcsr |= 1 << 7;
 		//busRequest(&BR4, 064); - breaks hello world at the moment
-	}
-	else if(!strcmp(command, "read") && addr == RCSR) {
+	} else if(!strcmp(command, "read") && addr == RCSR) {
 		return rcsr;
-	}
-	else if(!strcmp(command, "read") && addr == XCSR) {
+	} else if(!strcmp(command, "read") && addr == XCSR) {
 		return xcsr;
 	}
 	return 0;

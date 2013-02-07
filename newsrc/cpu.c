@@ -251,7 +251,7 @@ int fetchEx(void) {
 				psw.Z = 1;
 			break;
 
-			case 05:   //BIS
+		case 05:   //BIS
 			srcVal = getMem(src,WORD);
 			dstVal = getMem(dst,WORD);
 			result = dstVal | srcVal;
@@ -284,8 +284,8 @@ int fetchEx(void) {
 			; //continue
 		}
 	}
-        
-	else if ((IR & 074000) == 074000){
+
+	else if ((IR & 074000) == 074000) {
 		uint16_t op = IR >> 8;
 		uint32_t regNum = (IR & 0700) >> 6;
 		uint8_t dst = IR & 0xFF;
@@ -312,7 +312,7 @@ int fetchEx(void) {
 			break;
 
 		default:
-			break; 
+			break;
 		}
 	}
 
@@ -324,7 +324,7 @@ int fetchEx(void) {
 		//printf("Branch\n");
 		//waddstr(iface,"\nIn Branches\n");
 		//wrefresh(iface);
-				
+
 		switch(op) {
 			//Branches
 		case 01:    //BR
@@ -334,7 +334,7 @@ int fetchEx(void) {
 			//printf("%c",reg[0]);
 			break;
 
-		case 03:    //BEQ	
+		case 03:    //BEQ
 			//printf("%o\tBEQ",PC);
 			if (psw.Z == 1) {
 				PC = (PC) + (2 * offset);
@@ -350,7 +350,7 @@ int fetchEx(void) {
 			}
 			//printf("new PC: %o\n",PC);
 			break;
-		
+
 		default:
 			break; //continue
 		}
@@ -361,19 +361,19 @@ int fetchEx(void) {
 	else if ((IR & 0107700) && ((IR & 070000) == 0)) {
 		uint16_t op = IR >> 6;
 		uint16_t dst = IR & 077;
-		
+
 		int16_t preV;
 		int8_t preVByte;
 
-						
+
 		int16_t result;
 		int8_t resultByte;
- 
+
 		//printf("single op\n");
 		//waddstr(iface,"\nIn Single Operand\n");
 		//wrefresh(iface);
-       
-		switch(op) { 
+
+		switch(op) {
 			//General
 		case 050: //CLR
 			//printf("CLR\n");
@@ -665,7 +665,7 @@ int fetchEx(void) {
 			break;
 
 		case 03:  //SWAB
-			preV = getMem(dst,WORD); 
+			preV = getMem(dst,WORD);
 			result = (uint16_t) (preV & 0xFF) << 8;
 			result = (uint16_t) result + (((uint16_t) preV & 0xFF00) >> 8);
 			setMem(dst,result,WORD);
@@ -686,7 +686,7 @@ int fetchEx(void) {
 			result = preV + psw.C;
 			setMem(dst,result,WORD);
 			psw.N = 0;
-			psw.Z = 0;			
+			psw.Z = 0;
 			if(result < 0)
 				psw.N = 1;
 			if(result == 0)
@@ -708,7 +708,7 @@ int fetchEx(void) {
 			resultByte = preVByte + psw.C;
 			setMem(dst,result,BYTE);
 			psw.N = 0;
-			psw.Z = 0;			
+			psw.Z = 0;
 			if(resultByte < 0)
 				psw.N = 1;
 			if(resultByte == 0)
@@ -730,7 +730,7 @@ int fetchEx(void) {
 			result = preV - psw.C;
 			setMem(dst,result,WORD);
 			psw.N = 0;
-			psw.Z = 0;			
+			psw.Z = 0;
 			if(result < 0)
 				psw.N = 1;
 			if(result == 0)
@@ -752,7 +752,7 @@ int fetchEx(void) {
 			resultByte = preVByte - psw.C;
 			setMem(dst,resultByte,BYTE);
 			psw.N = 0;
-			psw.Z = 0;			
+			psw.Z = 0;
 			if(resultByte < 0)
 				psw.N = 1;
 			if(resultByte == 0)
@@ -773,7 +773,7 @@ int fetchEx(void) {
 			psw.V = 0;
 			if(psw.N == 1) {
 				setMem(dst,-1,WORD);
-			}else {
+			} else {
 				setMem(dst,0,WORD);
 				psw.Z = 1;
 			}
@@ -796,135 +796,135 @@ int fetchEx(void) {
 
 
 //Function to find and set a memory location based on addressing modes.
-uint16_t setMem(short daf, short value, enum Type type){
-    uint16_t regNumber = daf & 07;
-    uint16_t mode = (daf >> 3) & 07;
+uint16_t setMem(short daf, short value, enum Type type) {
+	uint16_t regNumber = daf & 07;
+	uint16_t mode = (daf >> 3) & 07;
 	uint16_t addr;
-  	uint16_t retVal;
+	uint16_t retVal;
 	uint16_t x;
 
-    switch(mode) {
-        //Register
-        case 0:
-			retVal = reg[regNumber];
-			if(type == WORD)
-				reg[regNumber] = value;
-			else
-				reg[regNumber] = (reg[regNumber] & 0177400) + (value & 0377);
-			return retVal;
-			break;
+	switch(mode) {
+		//Register
+	case 0:
+		retVal = reg[regNumber];
+		if(type == WORD)
+			reg[regNumber] = value;
+		else
+			reg[regNumber] = (reg[regNumber] & 0177400) + (value & 0377);
+		return retVal;
+		break;
 
-        //Register Defered
-        case 1:
-            if(type == WORD) {
-				retVal = getWord(reg[regNumber]);
-                setWord(reg[regNumber], value);
-			} else {
-				retVal = getByte(reg[regNumber]);	
-                setByte(reg[regNumber], value);
-			}
-			return retVal;
-            break;
+		//Register Defered
+	case 1:
+		if(type == WORD) {
+			retVal = getWord(reg[regNumber]);
+			setWord(reg[regNumber], value);
+		} else {
+			retVal = getByte(reg[regNumber]);
+			setByte(reg[regNumber], value);
+		}
+		return retVal;
+		break;
 
-        //Autoincrement
-        case 2:
-            if((type == WORD) || (regNumber == 6) || (regNumber == 7)) {
-                addr = reg[regNumber];
-				retVal = getWord(addr);
-  				reg[regNumber] += WORD;
-				setWord(addr, value);
-            } else{
-                addr = reg[regNumber];
-				retVal = getByte(addr);
-                reg[regNumber] += WORD;
-				setByte(addr, value);
-            }
-			return retVal;
-            break;
+		//Autoincrement
+	case 2:
+		if((type == WORD) || (regNumber == 6) || (regNumber == 7)) {
+			addr = reg[regNumber];
+			retVal = getWord(addr);
+			reg[regNumber] += WORD;
+			setWord(addr, value);
+		} else {
+			addr = reg[regNumber];
+			retVal = getByte(addr);
+			reg[regNumber] += WORD;
+			setByte(addr, value);
+		}
+		return retVal;
+		break;
 
-        //Autoincrement Defered
-        case 3:
-            if((type == WORD) || (regNumber == 6) || (regNumber == 7)) {
-				addr = getWord(reg[regNumber]);
-				retVal = getWord(addr);
-                reg[regNumber] = reg[regNumber] + 2;
-				//printf("addr: %o\tvalue: %c\n",addr,value);
-				setWord(addr,value);
-            } else{
-				addr = getWord(reg[regNumber]);
-				retVal = getByte(addr);
-                reg[regNumber] = reg[regNumber] + 1;
-				setByte(addr,value);
-            }
-			return retVal;
-            break;
+		//Autoincrement Defered
+	case 3:
+		if((type == WORD) || (regNumber == 6) || (regNumber == 7)) {
+			addr = getWord(reg[regNumber]);
+			retVal = getWord(addr);
+			reg[regNumber] = reg[regNumber] + 2;
+			//printf("addr: %o\tvalue: %c\n",addr,value);
+			setWord(addr,value);
+		} else {
+			addr = getWord(reg[regNumber]);
+			retVal = getByte(addr);
+			reg[regNumber] = reg[regNumber] + 1;
+			setByte(addr,value);
+		}
+		return retVal;
+		break;
 
-        //Autodecrement
-        case 4:
-            reg[regNumber] -= type;
-            if(type == WORD) {
-                setWord(reg[regNumber], value);
-				retVal = getWord(reg[regNumber]);
-			} else {
-                setByte(reg[regNumber], value);
-				retVal = getByte(reg[regNumber]);
-			}
-			return retVal;
-            break;
+		//Autodecrement
+	case 4:
+		reg[regNumber] -= type;
+		if(type == WORD) {
+			setWord(reg[regNumber], value);
+			retVal = getWord(reg[regNumber]);
+		} else {
+			setByte(reg[regNumber], value);
+			retVal = getByte(reg[regNumber]);
+		}
+		return retVal;
+		break;
 
-        //Autodecrement Defered
-        case 5:
-            reg[regNumber] -= type;
-            if(type == WORD) {
-                addr = getWord(reg[regNumber]);
-				retVal = getWord(addr);
-				setWord(addr,value);
-			} else {
-				addr = getWord(reg[regNumber]);
-				retVal = getByte(addr);
-				setByte(addr,value);
-			}
-			return retVal;
-            break;
+		//Autodecrement Defered
+	case 5:
+		reg[regNumber] -= type;
+		if(type == WORD) {
+			addr = getWord(reg[regNumber]);
+			retVal = getWord(addr);
+			setWord(addr,value);
+		} else {
+			addr = getWord(reg[regNumber]);
+			retVal = getByte(addr);
+			setByte(addr,value);
+		}
+		return retVal;
+		break;
 
-        //Index
-        case 6:
-            if(type == WORD) {
-                x = getWord(PC);
-				PC += 2;
-				retVal = getWord(x + regNumber);
-				setWord(x + regNumber, value);
-			} else {
-				x = getWord(PC);
-				PC += 2;
-				retVal = getByte(x + regNumber);
-				setByte(x + regNumber, value);
-			}
-			return retVal;
-            break;
+		//Index
+	case 6:
+		if(type == WORD) {
+			x = getWord(PC);
+			PC += 2;
+			retVal = getWord(x + regNumber);
+			setWord(x + regNumber, value);
+		} else {
+			x = getWord(PC);
+			PC += 2;
+			retVal = getByte(x + regNumber);
+			setByte(x + regNumber, value);
+		}
+		return retVal;
+		break;
 
-        //Index Defered
-        case 7:
-            if(type == WORD){
-				x = getWord(PC);
-				PC += 2;
-				addr = getWord(x + regNumber);
-				retVal = getWord(addr);
-				setWord(addr,value);
-			} else {
-				x = getWord(PC);
-				PC += 2;
-				addr = getWord(x + regNumber);
-				retVal = getByte(addr);
-				setByte(addr,value);
-			}
-			return retVal;
-            break;
+		//Index Defered
+	case 7:
+		if(type == WORD) {
+			x = getWord(PC);
+			PC += 2;
+			addr = getWord(x + regNumber);
+			retVal = getWord(addr);
+			setWord(addr,value);
+		} else {
+			x = getWord(PC);
+			PC += 2;
+			addr = getWord(x + regNumber);
+			retVal = getByte(addr);
+			setByte(addr,value);
+		}
+		return retVal;
+		break;
 
 	default:
 		return 0;
 		break;
-    }
+	}
 
 }
 
@@ -938,90 +938,90 @@ short getMem(short daf, enum Type type) {
 	uint16_t addr;
 	uint16_t op;
 
-    switch(mode) {
-        case 0:
-			if(type == WORD)
-				return reg[regNumber];
-			else
-				return (reg[regNumber] & 0xFF);
-			break;
+	switch(mode) {
+	case 0:
+		if(type == WORD)
+			return reg[regNumber];
+		else
+			return (reg[regNumber] & 0xFF);
+		break;
 
-        //Register Defered
-        case 1:
-            if(type == WORD)
-                return getWord(reg[regNumber]);
-            else
-                return getByte(reg[regNumber]);
-            break;
+		//Register Defered
+	case 1:
+		if(type == WORD)
+			return getWord(reg[regNumber]);
+		else
+			return getByte(reg[regNumber]);
+		break;
 
-        //Autoincrement
-        case 2:
-            if((type == WORD) || (regNumber == 6) || (regNumber == 7)) {
-                val = getWord(reg[regNumber]);
-                reg[regNumber] = reg[regNumber] + 2;
-            } else{
-                val = getByte(reg[regNumber]);
-                reg[regNumber] = reg[regNumber] + 1;
-            }
-            return val;
-            break;
+		//Autoincrement
+	case 2:
+		if((type == WORD) || (regNumber == 6) || (regNumber == 7)) {
+			val = getWord(reg[regNumber]);
+			reg[regNumber] = reg[regNumber] + 2;
+		} else {
+			val = getByte(reg[regNumber]);
+			reg[regNumber] = reg[regNumber] + 1;
+		}
+		return val;
+		break;
 
-        //Autoincrement Defered
-        case 3:
-            if((type == WORD) || (regNumber == 6) || (regNumber == 7)) {
-                addr = getWord(reg[regNumber]);
-                reg[regNumber] += 2;
-				op = getWord(addr);
-            } else {
-				addr = getWord(reg[regNumber]);
-                reg[regNumber] += 2;
-				op = getByte(addr);
-            }
-            return op;
-            break;
+		//Autoincrement Defered
+	case 3:
+		if((type == WORD) || (regNumber == 6) || (regNumber == 7)) {
+			addr = getWord(reg[regNumber]);
+			reg[regNumber] += 2;
+			op = getWord(addr);
+		} else {
+			addr = getWord(reg[regNumber]);
+			reg[regNumber] += 2;
+			op = getByte(addr);
+		}
+		return op;
+		break;
 
-        //Autodecrement
-        case 4:
-            reg[regNumber] -= type;
-            if(type == WORD)
-                getWord(reg[regNumber]);
-            else
-                getByte(reg[regNumber]);
+		//Autodecrement
+	case 4:
+		reg[regNumber] -= type;
+		if(type == WORD)
+			getWord(reg[regNumber]);
+		else
+			getByte(reg[regNumber]);
 
-        //Autodecrement Defered
-        case 5:
-            reg[regNumber] -= 2;
-            if(type == WORD)
-                return getWord(getWord(reg[regNumber]));
-            else
-                return getByte(getWord(reg[regNumber]));
-            break;
+		//Autodecrement Defered
+	case 5:
+		reg[regNumber] -= 2;
+		if(type == WORD)
+			return getWord(getWord(reg[regNumber]));
+		else
+			return getByte(getWord(reg[regNumber]));
+		break;
 
-        //Index
-        case 6:
-            if(type == WORD)
-                val = getWord(reg[regNumber] + PC);
-            else
-                val = getByte(reg[regNumber] + PC);
-            PC += 2;
-            return val;
-            break;
+		//Index
+	case 6:
+		if(type == WORD)
+			val = getWord(reg[regNumber] + PC);
+		else
+			val = getByte(reg[regNumber] + PC);
+		PC += 2;
+		return val;
+		break;
 
-        //Index Defered
-        case 7:
-            if(type == WORD)
-                val = getWord(getWord(reg[regNumber] + PC));
-            else
-                val = getByte(getWord(reg[regNumber] + PC));
-            PC += 2;
-            return val;
-            break;
+		//Index Defered
+	case 7:
+		if(type == WORD)
+			val = getWord(getWord(reg[regNumber] + PC));
+		else
+			val = getByte(getWord(reg[regNumber] + PC));
+		PC += 2;
+		return val;
+		break;
 
-        default:
-	    return 0;
-	    break;
+	default:
+		return 0;
+		break;
 
-    }
+	}
 }
 
 
@@ -1045,7 +1045,7 @@ priority level are above the current CPU's. If it is suitable for the next
 interrupt, it is removed from the list of waiting interrupts. */
 void interruptCPU() {
 	int i;
-  	i = 8;
+	i = 8;
 
 	for (i = 8; i >= psw.priority; i--) {
 		struct InterruptNode *cur_ptr;
@@ -1231,19 +1231,19 @@ void interruptCPU() {
 
 
 //return an uint16_t based on the Psw.
-uint16_t pswToShort(Psw status){
+uint16_t pswToShort(Psw status) {
 	uint16_t val;
-	
+
 	val = (status.currentMode << 14) +
-		(status.previousMode << 12) +
-		(status.regSet << 11) +
-		(status.unused << 9) +
-		(status.priority << 5) +
-		(status.T << 4) +
-		(status.N << 3) +
-		(status.Z << 2) +
-		(status.V << 1) +
-		(status.C);
+	      (status.previousMode << 12) +
+	      (status.regSet << 11) +
+	      (status.unused << 9) +
+	      (status.priority << 5) +
+	      (status.T << 4) +
+	      (status.N << 3) +
+	      (status.Z << 2) +
+	      (status.V << 1) +
+	      (status.C);
 
 	return val;
 }
@@ -1322,13 +1322,13 @@ void testHello() {
 	setWord(01040,0177566);
 	setWord(01042,0000770);
 
-   	setWord(01044,0000000);
+	setWord(01044,0000000);
 }
 
 
 
 //Test some instructions.
-void testInstruction(){
+void testInstruction() {
 	PC = 01000;
 	reg[2] = 012340;
 	reg[4] = 012345;
@@ -1342,7 +1342,7 @@ void testInstruction(){
 
 
 //Test the linked list
-void testInterrupt(){
+void testInterrupt() {
 	//start the stack at 0200 octal.
 	SP = 0200;
 	PC = 1;
@@ -1368,7 +1368,7 @@ void testInterrupt(){
 
 
 	//interrupt!
-	interruptCPU();	
+	interruptCPU();
 
 
 	printf("\n--- AFTER --- \nNEW PSW: ");
@@ -1381,10 +1381,10 @@ void testInterrupt(){
 
 
 //print the requests on the bus.
-void printBusReq(){
+void printBusReq() {
 
- 	struct InterruptNode *npr_ptr;
- 	npr_ptr = NPR;
+	struct InterruptNode *npr_ptr;
+	npr_ptr = NPR;
 
 	struct InterruptNode *br7_ptr;
 	br7_ptr = BR7;
@@ -1416,67 +1416,67 @@ void printBusReq(){
 
 
 
- 	while (npr_ptr != NULL) {
- 		printf("NPR_%p --> ",npr_ptr);
- 		npr_ptr = (struct InterruptNode *)npr_ptr->next;
- 	}
+	while (npr_ptr != NULL) {
+		printf("NPR_%p --> ",npr_ptr);
+		npr_ptr = (struct InterruptNode *)npr_ptr->next;
+	}
 
 	printf("\n");
 
 	while (br7_ptr != NULL) {
- 		printf("BR7_%p --> ",br7_ptr);
- 		br7_ptr = (struct InterruptNode *)br7_ptr->next;
- 	}
-	
+		printf("BR7_%p --> ",br7_ptr);
+		br7_ptr = (struct InterruptNode *)br7_ptr->next;
+	}
+
 	printf("\n");
 
 	while (br6_ptr != NULL) {
- 		printf("BR6_%p --> ",br6_ptr);
- 		br6_ptr = (struct InterruptNode *)br6_ptr->next;
- 	}
-	
+		printf("BR6_%p --> ",br6_ptr);
+		br6_ptr = (struct InterruptNode *)br6_ptr->next;
+	}
+
 	printf("\n");
 
 	while (br5_ptr != NULL) {
- 		printf("BR5_%p --> ",br5_ptr);
- 		br5_ptr = (struct InterruptNode *)br5_ptr->next;
- 	}
-	
+		printf("BR5_%p --> ",br5_ptr);
+		br5_ptr = (struct InterruptNode *)br5_ptr->next;
+	}
+
 	printf("\n");
 
 	while (br4_ptr != NULL) {
- 		printf("BR4_%p --> ",br4_ptr);
- 		br4_ptr = (struct InterruptNode *)br4_ptr->next;
- 	}
-	
+		printf("BR4_%p --> ",br4_ptr);
+		br4_ptr = (struct InterruptNode *)br4_ptr->next;
+	}
+
 	printf("\n");
 
 	while (br3_ptr != NULL) {
- 		printf("BR3_%p --> ",br3_ptr);
- 		br3_ptr = (struct InterruptNode *)br3_ptr->next;
- 	}
-	
+		printf("BR3_%p --> ",br3_ptr);
+		br3_ptr = (struct InterruptNode *)br3_ptr->next;
+	}
+
 	printf("\n");
 
 	while (br2_ptr != NULL) {
- 		printf("BR2_%p --> ",br2_ptr);
- 		br2_ptr = (struct InterruptNode *)br2_ptr->next;
- 	}
-	
+		printf("BR2_%p --> ",br2_ptr);
+		br2_ptr = (struct InterruptNode *)br2_ptr->next;
+	}
+
 	printf("\n");
 
 	while (br1_ptr != NULL) {
- 		printf("BR1_%p --> ",br1_ptr);
- 		br1_ptr = (struct InterruptNode *)br1_ptr->next;
- 	}
-	
+		printf("BR1_%p --> ",br1_ptr);
+		br1_ptr = (struct InterruptNode *)br1_ptr->next;
+	}
+
 	printf("\n");
 
 	while (br0_ptr != NULL) {
- 		printf("BR0_%p --> ",br0_ptr);
- 		br0_ptr = (struct InterruptNode *)br0_ptr->next;
- 	}
-	
+		printf("BR0_%p --> ",br0_ptr);
+		br0_ptr = (struct InterruptNode *)br0_ptr->next;
+	}
+
 	printf("\n");
 }
 
