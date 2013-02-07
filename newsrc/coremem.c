@@ -224,7 +224,9 @@ void initializeDeviceIO(void) {
 }
 
 /* Configure the address range used by an IO device */
-char configureDevice(unsigned short (*deviceFunction) (const char *, unsigned int, unsigned short), unsigned int startAddr, unsigned int endAddr) {
+int8_t configureDevice(uint16_t (*deviceFunction) (const char *, uint32_t, uint16_t), uint32_t startAddr, uint32_t endAddr) {
+
+//char configureDevice(unsigned short (*deviceFunction) (const char *, unsigned int, unsigned short), unsigned int startAddr, unsigned int endAddr) {
 
   // Ensure device range start and end are valid words
   if ((!isWord(startAddr)) || (!isWord(endAddr)))

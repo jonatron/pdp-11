@@ -39,6 +39,10 @@ int main(int argc, const char* argv[]) {
 	configureDevice(DL11io, RCSR, XBUF);
 	initCpu();
 	debug_print("running fetchex loop\n");
+	debug_print("size of ");
+	char buf[50];
+	sprintf(buf, "char %zu short %zu int %zu long %zu", sizeof(char), sizeof(short), sizeof(int), sizeof(long));
+	debug_print(buf);
 	while(1) {
 		{ //run at a certain number of instructions per seconds
 		instruction_count++;

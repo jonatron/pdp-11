@@ -3,30 +3,38 @@
 #include "interface.h"
 #include "cpu.h"
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <inttypes.h>
+
 #define PC reg[7]    //Program counter
 #define SP reg[6]    //Stack pointer
 #define SOURCE 07700
 #define DEST 077
 #define BYTE_BITS(x) (x & 0xFF)
 
+//size of char 1 short 2 int 4 long 8
+//             8       16    32     64
+
 
 Psw psw;    //Processor Status Word variable
-unsigned short reg[8];    //General Register Array.
-unsigned short IR;        // Instruction Register
+uint16_t reg[8];    //General Register Array.
+uint16_t IR;        // Instruction Register
 
 
 //Prototypes for private use.
-unsigned short setMem(short, short value, enum Type);
-short getMem(short, enum Type);
-void setPsw(unsigned short);
-unsigned short cpuStatus(const char *, unsigned int, unsigned short);
+uint16_t setMem(int16_t, int16_t value, enum Type);
+short getMem(int16_t, enum Type);
+void setPsw(uint16_t);
+uint16_t cpuStatus(const char *, uint32_t, uint16_t);
 
 
 //Tests
 void testCpuStatus(void);
 void testInterrupt(void);
 void printBusReq(void);
-void toBin(unsigned short); 
+void toBin(uint16_t);
 void testHello(void);
 void testInstruction(void);
 
@@ -34,7 +42,7 @@ void testInstruction(void);
 //initialise the cpu.
 void initCpu() {
 	SP = 0200;
-	configureDevice(cpuStatus,0777776,0777776);
+	configureDevice(cpuStatus, 0777776, 0777776);
 	debug_print("initCpu\n");
 	//Test method calls.
 	testHello();
@@ -63,21 +71,21 @@ int fetchEx(void) {
 	//Check to see if it is a double operand instruction.
 	else if ((IR & 070000) != 0) {
 
-		unsigned short op = IR >> 12;
+		uint16_t op = IR >> 12;
 
-		unsigned short dst = IR & 077;
-		unsigned short src = (IR & SOURCE) >> 6;
+		uint16_t dst = IR & 077;
+		uint16_t src = (IR & SOURCE) >> 6;
 
-		signed short srcVal;
-		signed char srcValByte;
+		int16_t srcVal;
+		int8_t srcValByte;
 
-		signed short result;
-		signed char resultByte;
+		int16_t result;
+		int8_t resultByte;
 
-		signed short oldVal;
+		int16_t oldVal;
 
-		signed short dstVal;
-		signed char dstValByte;
+		int16_t dstVal;
+		int8_t dstValByte;
 
 		//printf("Double OP\n");
 		//waddstr(iface,"\nIn Double operand\n");
@@ -129,7 +137,7 @@ int fetchEx(void) {
 				psw.Z = 1;
 			if (((resultByte * dstValByte) > 0) && ((dstValByte * srcValByte) < 0))
 				psw.V = 1;
-			if ((unsigned char)srcValByte < (unsigned char)dstValByte)
+			if ((uint8_t)srcValByte < (uint8_t)dstValByte)
 				psw.C = 0;
 			break;
 
@@ -147,7 +155,7 @@ int fetchEx(void) {
 				psw.Z = 1;
 			if (((result * dstVal) > 0) && ((dstVal * srcVal) < 0))
 				psw.V = 1;
-			if ((unsigned short)srcVal < (unsigned short)dstVal)
+			if ((uint16_t)srcVal < (uint16_t)dstVal)
 				psw.C = 0;
 			break;
 
@@ -278,12 +286,12 @@ int fetchEx(void) {
 	}
         
 	else if ((IR & 074000) == 074000){
-		unsigned short op = IR >> 8;
-		unsigned int regNum = (IR & 0700) >> 6;
-		unsigned char dst = IR & 0xFF;
-		signed short dstVal;
-		unsigned int regVal;
-		signed short result;
+		uint16_t op = IR >> 8;
+		uint32_t regNum = (IR & 0700) >> 6;
+		uint8_t dst = IR & 0xFF;
+		int16_t dstVal;
+		uint32_t regVal;
+		int16_t result;
 
 		//waddstr(iface,"\nIn XOR\n");
 		//wrefresh(iface);
@@ -311,7 +319,7 @@ int fetchEx(void) {
 
 	//Branches
 	else if ((IR & 0103400)) {
-		unsigned short op = IR >> 8;
+		uint16_t op = IR >> 8;
 		char offset = IR & 0xFF;
 		//printf("Branch\n");
 		//waddstr(iface,"\nIn Branches\n");
@@ -351,14 +359,14 @@ int fetchEx(void) {
 
 	// Then check to see if it is a single operand instruction.
 	else if ((IR & 0107700) && ((IR & 070000) == 0)) {
-		unsigned short op = IR >> 6;
-		unsigned short dst = IR & 077;
+		uint16_t op = IR >> 6;
+		uint16_t dst = IR & 077;
 		
-		signed short preV;
+		int16_t preV;
 		signed char preVByte;
 
 						
-		signed short result;
+		int16_t result;
 		signed char resultByte;
  
 		//printf("single op\n");
@@ -592,7 +600,7 @@ int fetchEx(void) {
 
 		case 060: //ROR
 			preV = getMem(dst,WORD);
-			result = (unsigned short) preV / 2;
+			result = (uint16_t) preV / 2;
 			if(psw.C == 1)
 				result |= (1<<15);
 			setMem(dst,result,WORD);
@@ -608,7 +616,7 @@ int fetchEx(void) {
 
 		case 01060: //ROR(B)
 			preVByte = getMem(dst,BYTE);
-			resultByte = (unsigned char) preVByte / 2;
+			resultByte = (uint8_t) preVByte / 2;
 			if(psw.C == 1)
 				resultByte |= (1<<7);
 			setMem(dst,resultByte,BYTE);
@@ -624,7 +632,7 @@ int fetchEx(void) {
 
 		case 061: //ROL
 			preV = getMem(dst,WORD);
-			result = (unsigned short) preV << 1;
+			result = (uint16_t) preV << 1;
 			if(psw.C == 1)
 				result |= 1;
 			setMem(dst,result,WORD);
@@ -641,7 +649,7 @@ int fetchEx(void) {
 
 		case 01061: //ROL(B)
 			preVByte = getMem(dst,BYTE);
-			resultByte = (unsigned char) preVByte << 1;
+			resultByte = (uint8_t) preVByte << 1;
 			if(psw.C == 1)
 				resultByte |= 1;
 			setMem(dst,resultByte,BYTE);
@@ -658,8 +666,8 @@ int fetchEx(void) {
 
 		case 03:  //SWAB
 			preV = getMem(dst,WORD); 
-			result = (unsigned short) (preV & 0xFF) << 8;
-			result = (unsigned short) result + (((unsigned short) preV & 0xFF00) >> 8);
+			result = (uint16_t) (preV & 0xFF) << 8;
+			result = (uint16_t) result + (((uint16_t) preV & 0xFF00) >> 8);
 			setMem(dst,result,WORD);
 			psw.N = 0;
 			psw.Z = 0;
@@ -688,7 +696,7 @@ int fetchEx(void) {
 			} else {
 				psw.V = 0;
 			}
-			if(((unsigned short) preV == 0177777) & (psw.C == 1)) {
+			if(((uint16_t) preV == 0177777) & (psw.C == 1)) {
 				psw.C = 1;
 			} else {
 				psw.C = 0;
@@ -710,7 +718,7 @@ int fetchEx(void) {
 			} else {
 				psw.V = 0;
 			}
-			if(((unsigned char) preVByte == 0377) & (psw.C == 1)) {
+			if(((uint8_t) preVByte == 0377) & (psw.C == 1)) {
 				psw.C = 1;
 			} else {
 				psw.C = 0;
@@ -727,12 +735,12 @@ int fetchEx(void) {
 				psw.N = 1;
 			if(result == 0)
 				psw.Z = 1;
-			if((unsigned short) preV == 0100000) {
+			if((uint16_t) preV == 0100000) {
 				psw.V = 1;
 			} else {
 				psw.V = 0;
 			}
-			if(((unsigned short) preV == 0) & (psw.C == 1)) {
+			if(((uint16_t) preV == 0) & (psw.C == 1)) {
 				psw.C = 1;
 			} else {
 				psw.C = 0;
@@ -749,12 +757,12 @@ int fetchEx(void) {
 				psw.N = 1;
 			if(resultByte == 0)
 				psw.Z = 1;
-			if((unsigned char) preVByte == 0200) {
+			if((uint8_t) preVByte == 0200) {
 				psw.V = 1;
 			} else {
 				psw.V = 0;
 			}
-			if(((unsigned char) preVByte == 0) & (psw.C == 1)) {
+			if(((uint8_t) preVByte == 0) & (psw.C == 1)) {
 				psw.C = 1;
 			} else {
 				psw.C = 0;
@@ -788,12 +796,12 @@ int fetchEx(void) {
 
 
 //Function to find and set a memory location based on addressing modes.
-unsigned short setMem(short daf, short value, enum Type type){
-    unsigned short regNumber = daf & 07;
-    unsigned short mode = (daf >> 3) & 07;
-	unsigned short addr;
-  	unsigned short retVal;
-	unsigned short x;
+uint16_t setMem(short daf, short value, enum Type type){
+    uint16_t regNumber = daf & 07;
+    uint16_t mode = (daf >> 3) & 07;
+	uint16_t addr;
+  	uint16_t retVal;
+	uint16_t x;
 
     switch(mode) {
         //Register
@@ -924,11 +932,11 @@ unsigned short setMem(short daf, short value, enum Type type){
 
 //Function to find and get the memory location based on addressing modes.
 short getMem(short daf, enum Type type) {
-	unsigned short regNumber = daf & 07;
-	unsigned short mode = (daf >> 3) & 07;
-	unsigned short val;
-	unsigned short addr;
-	unsigned short op;
+	uint16_t regNumber = daf & 07;
+	uint16_t mode = (daf >> 3) & 07;
+	uint16_t val;
+	uint16_t addr;
+	uint16_t op;
 
     switch(mode) {
         case 0:
@@ -1020,7 +1028,7 @@ short getMem(short daf, enum Type type) {
 
 /*Recieve request for an interrupt and add it to corresponding priority queue.
 Head is the star node for the priority queue. */
-void busRequest(struct InterruptNode** headRef, unsigned short vAddress) {
+void busRequest(struct InterruptNode** headRef, uint16_t vAddress) {
 
 	struct InterruptNode* newNode = malloc(sizeof(struct InterruptNode));
 
@@ -1047,7 +1055,7 @@ void interruptCPU() {
 			cur_ptr = NPR;
 			if(cur_ptr != NULL) {
 				SP = SP - 2;                             //stack expands downwards.
-				setWord(SP, (unsigned short)PC);         // put the PC on stack.
+				setWord(SP, (uint16_t)PC);         // put the PC on stack.
 				SP = SP - 2;                             //stack expands downwards.
 				setWord(SP, pswToShort(psw));            //put psw on stack.
 
@@ -1066,7 +1074,7 @@ void interruptCPU() {
 			cur_ptr = BR7;
 			if(cur_ptr != NULL) {
 				SP = SP - 2;                             //stack expands downwards.
-				setWord(SP, (unsigned short)PC);         // put the PC on stack.
+				setWord(SP, (uint16_t)PC);         // put the PC on stack.
 				SP = SP - 2;                             //stack expands downwards.
 				setWord(SP, pswToShort(psw));            //put psw on stack.
 
@@ -1085,7 +1093,7 @@ void interruptCPU() {
 			cur_ptr = BR6;
 			if(cur_ptr != NULL) {
 				SP = SP - 2;                             //stack expands downwards.
-				setWord(SP, (unsigned short)PC);         // put the PC on stack.
+				setWord(SP, (uint16_t)PC);         // put the PC on stack.
 				SP = SP - 2;                             //stack expands downwards.
 				setWord(SP, pswToShort(psw));            //put psw on stack.
 
@@ -1104,7 +1112,7 @@ void interruptCPU() {
 			cur_ptr = BR5;
 			if(cur_ptr != NULL) {
 				SP = SP - 2;                             //stack expands downwards.
-				setWord(SP, (unsigned short)PC);         // put the PC on stack.
+				setWord(SP, (uint16_t)PC);         // put the PC on stack.
 				SP = SP - 2;                             //stack expands downwards.
 				setWord(SP, pswToShort(psw));            //put psw on stack.
 
@@ -1123,7 +1131,7 @@ void interruptCPU() {
 			cur_ptr = BR4;
 			if(cur_ptr != NULL) {
 				SP = SP - 2;                             //stack expands downwards.
-				setWord(SP, (unsigned short)PC);         // put the PC on stack.
+				setWord(SP, (uint16_t)PC);         // put the PC on stack.
 				SP = SP - 2;                             //stack expands downwards.
 				setWord(SP, pswToShort(psw));            //put psw on stack.
 
@@ -1142,7 +1150,7 @@ void interruptCPU() {
 			cur_ptr = BR3;
 			if(cur_ptr != NULL) {
 				SP = SP - 2;                             //stack expands downwards.
-				setWord(SP, (unsigned short)PC);         // put the PC on stack.
+				setWord(SP, (uint16_t)PC);         // put the PC on stack.
 				SP = SP - 2;                             //stack expands downwards.
 				setWord(SP, pswToShort(psw));            //put psw on stack.
 
@@ -1161,7 +1169,7 @@ void interruptCPU() {
 			cur_ptr = BR2;
 			if(cur_ptr != NULL) {
 				SP = SP - 2;                             //stack expands downwards.
-				setWord(SP, (unsigned short)PC);         // put the PC on stack.
+				setWord(SP, (uint16_t)PC);         // put the PC on stack.
 				SP = SP - 2;                             //stack expands downwards.
 				setWord(SP, pswToShort(psw));            //put psw on stack.
 
@@ -1180,7 +1188,7 @@ void interruptCPU() {
 			cur_ptr = BR1;
 			if(cur_ptr != NULL) {
 				SP = SP - 2;                             //stack expands downwards.
-				setWord(SP, (unsigned short)PC);         // put the PC on stack.
+				setWord(SP, (uint16_t)PC);         // put the PC on stack.
 				SP = SP - 2;                             //stack expands downwards.
 				setWord(SP, pswToShort(psw));            //put psw on stack.
 
@@ -1199,7 +1207,7 @@ void interruptCPU() {
 			cur_ptr = BR0;
 			if(cur_ptr != NULL) {
 				SP = SP - 2;                             //stack expands downwards.
-				setWord(SP, (unsigned short)PC);         // put the PC on stack.
+				setWord(SP, (uint16_t)PC);         // put the PC on stack.
 				SP = SP - 2;                             //stack expands downwards.
 				setWord(SP, pswToShort(psw));            //put psw on stack.
 
@@ -1222,9 +1230,9 @@ void interruptCPU() {
 
 
 
-//return an unsigned short based on the Psw.
-unsigned short pswToShort(Psw status){
-	unsigned short val;
+//return an uint16_t based on the Psw.
+uint16_t pswToShort(Psw status){
+	uint16_t val;
 	
 	val = (status.currentMode << 14) +
 		(status.previousMode << 12) +
@@ -1242,8 +1250,8 @@ unsigned short pswToShort(Psw status){
 
 
 
-//set the psw from an unsigned short.
-void setPsw(unsigned short newPsw) {
+//set the psw from an uint16_t.
+void setPsw(uint16_t newPsw) {
 	psw.C = newPsw & 1;
 	psw.V = (newPsw & 2) >> 1;
 	psw.Z = (newPsw & 4) >> 2;
@@ -1258,7 +1266,7 @@ void setPsw(unsigned short newPsw) {
 
 
 //Set up CPU Status address in memory.
-unsigned short cpuStatus(const char * command, unsigned int addr, unsigned short value) {
+uint16_t cpuStatus(const char * command, uint32_t addr, uint16_t value) {
 	// Perform read operation
 	if (strcmp(command, "read") == 0) {
 		return pswToShort(psw);
@@ -1473,8 +1481,8 @@ void printBusReq(){
 }
 
 
-void toBin(unsigned short n) {
-	unsigned int i;
+void toBin(uint16_t n) {
+	uint32_t i;
 	i = 1<<(sizeof(n) * 8 - 1);
 	while (i > 0) {
 		if (n & i)

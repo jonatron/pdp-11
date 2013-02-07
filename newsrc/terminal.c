@@ -27,7 +27,7 @@ void on_keypress(unsigned char key) {
 }
 
 
-unsigned short DL11io(const char * command, unsigned int addr, unsigned short value) {
+uint16_t DL11io(const char * command, uint32_t addr, uint16_t value) {
 	if(!strcmp(command, "read") && addr == RBUF) {
 		//clear receiver done bit (7) in RCSR
 		rcsr &= ~(1 << 7);

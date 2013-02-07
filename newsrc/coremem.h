@@ -1,4 +1,8 @@
+#include <stdint.h>
 /* Functions for Core Memory */
+//size of char 1 short 2 int 4 long 8
+//             8       16    32     64
+
 
 #define MEMSIZE 0177777
 
@@ -25,7 +29,7 @@ void printMem(const char * type, unsigned short startAddr, unsigned short endAdd
 /* Initialize device function pointers to zero */
 void initializeDeviceIO(void);
 
-char configureDevice(unsigned short (*deviceFunction) (const char *, unsigned int, unsigned short), unsigned int startAddr, unsigned int endAddr);
+int8_t configureDevice(uint16_t (*deviceFunction) (const char *, uint32_t, uint16_t), uint32_t startAddr, uint32_t endAddr);
 
 unsigned short io(const char * command, unsigned int addr, unsigned short newWord);
 
