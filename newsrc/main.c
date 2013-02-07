@@ -32,14 +32,13 @@ int main(int argc, const char* argv[]) {
 	clock_gettime(CLOCK_MONOTONIC, &start_time);
 	//sleep(1);
 	debug_print("about to initializeDeviceIO\n");
-	tty_print("hi\n");
+	tty_print("tty print test\n");
 	int halt = 0;
 
 	initializeDeviceIO();
 	configureDevice(DL11io, RCSR, XBUF);
 	initCpu();
 	debug_print("running fetchex loop\n");
-	tty_print("test\n");
 	while(1) {
 		{ //run at a certain number of instructions per seconds
 		instruction_count++;

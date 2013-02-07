@@ -25,7 +25,6 @@ void debug_print(char *str) {
 }
 
 void tty_print(char *str) {
-	return;
 	pthread_mutex_lock(&lock);
 	waddstr(tty_subwindow, str);
 	touchwin(my_wins[0]);
@@ -35,7 +34,6 @@ void tty_print(char *str) {
 }
 
 void tty_printch(char ch) {
-	return;
 	pthread_mutex_lock(&lock);
 	waddch(tty_subwindow, ch);
 	touchwin(my_wins[0]);

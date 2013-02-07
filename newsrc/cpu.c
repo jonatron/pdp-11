@@ -36,7 +36,6 @@ void initCpu() {
 	SP = 0200;
 	configureDevice(cpuStatus,0777776,0777776);
 	debug_print("initCpu\n");
-	setWord(XBUF, 'F');
 	//Test method calls.
 	testHello();
 	//testInstruction();
