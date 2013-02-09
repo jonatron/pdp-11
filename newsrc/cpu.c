@@ -290,9 +290,6 @@ int fetchEx(void) {
 		uint32_t regVal;
 		int16_t result;
 
-		//waddstr(iface,"\nIn XOR\n");
-		//wrefresh(iface);
-
 		switch(op) {
 		case 0170:    //XOR
 			debug_print("XOR\n");
@@ -324,28 +321,22 @@ int fetchEx(void) {
 		switch(op) {
 			//Branches
 		case 01:    //BR
-			//printf("%o\tBR",PC);
+			debug_print("BR\n");
 			PC = (PC) + (2 * offset);
-			//printf("\tnew PC: %o\n",PC);
-			//printf("%c",reg[0]);
 			break;
 
 		case 03:    //BEQ
-			//printf("%o\tBEQ",PC);
+			debug_print("BEQ\n");
 			if (psw.Z == 1) {
 				PC = (PC) + (2 * offset);
 			}
-			//printf("\tnew PC: %o\n",PC);
 			break;
 
 		case 0200:   //BPL
-			//printf("%o\tBPL\tpsw.N: %o\n",PC,psw.N);
 			debug_print("BPL\n");
 			if (psw.N == 1) {
-				//printf("psw.N from within: %o\n",psw.N);
 				PC = (PC) + (2 * offset);
 			}
-			//printf("new PC: %o\n",PC);
 			break;
 
 		default:
@@ -366,10 +357,7 @@ int fetchEx(void) {
 		int16_t result;
 		int8_t resultByte;
 
-		//printf("single op\n");
-		//waddstr(iface,"\nIn Single Operand\n");
-		//wrefresh(iface);
-
+		debug_print("single op");
 		switch(op) {
 			//General
 		case 050: //CLR
@@ -382,7 +370,7 @@ int fetchEx(void) {
 			break;
 
 		case 01050: //CLR(B)
-			//printf("CLR\(B\)\n");
+			debug_print("CLR(B)\n");
 			setMem(dst, 0, BYTE);
 			psw.N = 0;
 			psw.V = 0;
@@ -391,7 +379,7 @@ int fetchEx(void) {
 			break;
 
 		case 051: //COM
-			//printf("COM\n");
+			debug_print("COM\n");
 			result = ~getMem(dst,WORD);
 			setMem(dst,result,WORD);
 			psw.V = 0;
@@ -405,6 +393,7 @@ int fetchEx(void) {
 			break;
 
 		case 01051: //COM(B)
+			debug_print("COM(B)\n");
 			resultByte = ~getMem(dst,BYTE);
 			setMem(dst,resultByte,BYTE);
 			psw.V = 0;
@@ -508,7 +497,7 @@ int fetchEx(void) {
 			break;
 
 		case 057: //TST
-			//printf("TST\n");
+			debug_print("TST\n");
 			result = getMem(dst,WORD);
 			psw.N = 0;
 			psw.Z = 0;
