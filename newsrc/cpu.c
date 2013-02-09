@@ -87,14 +87,10 @@ int fetchEx(void) {
 		int16_t dstVal;
 		int8_t dstValByte;
 
-		//printf("Double OP\n");
-		//waddstr(iface,"\nIn Double operand\n");
-		//wrefresh(iface);
-
 		switch(op) {
 
 		case 01:    //MOV
-			//printf("%o\tMOV\n",PC);
+			debug_print("MOV\n");
 			srcVal = getMem(src,WORD);
 			setMem(dst,srcVal,WORD);
 			psw.N = 0;
@@ -109,6 +105,7 @@ int fetchEx(void) {
 			break;
 
 		case 011:    //MOV(B)
+			debug_print("MOV(B)");
 			//printf("%o\tMOV B",PC);
 			srcValByte = getMem(src,BYTE);
 			setMem(dst,srcValByte,BYTE);
@@ -298,6 +295,7 @@ int fetchEx(void) {
 
 		switch(op) {
 		case 0170:    //XOR
+			debug_print("XOR\n");
 			dstVal = getMem(dst,WORD);
 			regVal = reg[regNum];
 			result = dstVal ^ regVal;
@@ -321,9 +319,7 @@ int fetchEx(void) {
 	else if ((IR & 0103400)) {
 		uint16_t op = IR >> 8;
 		int8_t offset = IR & 0xFF;
-		//printf("Branch\n");
-		//waddstr(iface,"\nIn Branches\n");
-		//wrefresh(iface);
+		debug_print("branches\n");
 
 		switch(op) {
 			//Branches
@@ -344,6 +340,7 @@ int fetchEx(void) {
 
 		case 0200:   //BPL
 			//printf("%o\tBPL\tpsw.N: %o\n",PC,psw.N);
+			debug_print("BPL\n");
 			if (psw.N == 1) {
 				//printf("psw.N from within: %o\n",psw.N);
 				PC = (PC) + (2 * offset);
@@ -376,7 +373,7 @@ int fetchEx(void) {
 		switch(op) {
 			//General
 		case 050: //CLR
-			//printf("CLR\n");
+			debug_print("CLR\n");
 			setMem(dst, 0, WORD);
 			psw.N = 0;
 			psw.V = 0;
@@ -783,14 +780,6 @@ int fetchEx(void) {
 			break;
 		}
 	}
-	//printf("test",reg[2], reg[4]);
-	//toBin(pswToShort(psw));
-	//printf("\n");
-
-	//wprintw(iface, "\nreg2: %+ho\n", reg[2]);
-	//wprintw(iface, "reg4: %+ho\n", reg[4]);
-	//wrefresh(iface); //this is required to show changes
-
 	return 0;
 }
 

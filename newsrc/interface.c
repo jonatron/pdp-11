@@ -6,22 +6,28 @@
 #include <unistd.h>
 
 
-#define NLINES 15
+#define NLINES 25
 #define NCOLS 70
+#define PADLINES 100
 
 //A lot of code stolen from "NCURSES Programming HOWTO"
 
 WINDOW *my_wins[3];
+WINDOW *debug_pad, *debug_subpad;
 WINDOW *debug_subwindow, *tty_subwindow;
 PANEL  *my_panels[3];
 PANEL  *top;
+
+#define MAX_PAD_POS (PADLINES - NLINES + 3)
+int pad_pos = MAX_PAD_POS;
+
 
 pthread_mutex_t lock;
 
 void debug_print(char *str) {
 	pthread_mutex_lock(&lock);
-	waddstr(debug_subwindow, str);
-	touchwin(my_wins[2]);
+	waddstr(debug_pad, str);
+	copywin(debug_pad, debug_subwindow, pad_pos, 0, 0, 0, NLINES - 5, NCOLS - 5, FALSE);
 	wrefresh(debug_subwindow);
 	pthread_mutex_unlock(&lock);
 }
@@ -103,12 +109,30 @@ void *interface_loop() {
 			continue;
 		}
 		switch(ch) {
-		case 9:
-			top = (PANEL *)panel_userptr(top);
-			pthread_mutex_lock(&lock);
-			top_panel(top);
-			pthread_mutex_unlock(&lock);
-			break;
+			case 9:
+				top = (PANEL *)panel_userptr(top);
+				pthread_mutex_lock(&lock);
+				top_panel(top);
+				pthread_mutex_unlock(&lock);
+				break;
+			case KEY_UP:
+				pthread_mutex_lock(&lock);
+				if(pad_pos >= 1) {
+					pad_pos--;
+				}
+				copywin(debug_pad, debug_subwindow, pad_pos, 0, 0, 0, NLINES - 5, NCOLS - 5, FALSE);
+				wrefresh(debug_subwindow);
+				pthread_mutex_unlock(&lock);
+				break;
+			case KEY_DOWN:
+				pthread_mutex_lock(&lock);
+				if(pad_pos < MAX_PAD_POS) {
+					pad_pos++;
+				}
+				copywin(debug_pad, debug_subwindow, pad_pos, 0, 0, 0, NLINES - 5, NCOLS - 5, FALSE);
+				wrefresh(debug_subwindow);
+				pthread_mutex_unlock(&lock);
+	                        break;
 		}
 		pthread_mutex_lock(&lock);
 		update_panels();
@@ -139,8 +163,13 @@ void init_wins(WINDOW **wins, int n) {
 			break;
 		case 2:
 			sprintf(label, "Debug");
+			//WINDOW *newpad(int nlines, int ncols);
+			debug_pad = newpad(100, NCOLS - 4);
+			//WINDOW *derwin(WINDOW *orig, int nlines, int ncols, int begin_y, int begin_x);
 			debug_subwindow = derwin(wins[i], NLINES - 4, NCOLS - 4, 3, 2);
-			scrollok(debug_subwindow, 1);
+			wmove(debug_pad, 99, 0);
+			//scrollok(debug_subwindow, 1);
+			scrollok(debug_pad, 1);
 			break;
 		}
 		win_show(wins[i], label, i + 1);
