@@ -3,6 +3,8 @@
 #include <panel.h>
 #include <string.h>
 #include <pthread.h>
+#include <unistd.h>
+
 
 #define NLINES 15
 #define NCOLS 70
@@ -53,6 +55,7 @@ void setup_interface() {
 	cbreak();
 	noecho();
 	keypad(stdscr, TRUE);
+	timeout(0);
 
 	/* Initialize all the colors */
 	init_pair(1, COLOR_RED, COLOR_BLACK);
@@ -92,6 +95,13 @@ void *interface_loop() {
 		pthread_mutex_lock(&lock);
 		ch = getch();
 		pthread_mutex_unlock(&lock);
+		if(ch == ERR) {
+			struct timespec req, rem;
+			req.tv_sec = 0;
+			req.tv_nsec = 50000;
+			nanosleep(&req, &rem);
+			continue;
+		}
 		switch(ch) {
 		case 9:
 			top = (PANEL *)panel_userptr(top);
