@@ -48,7 +48,8 @@ void initCpu() {
 	debug_print("initCpu\n");
 	//Test method calls.
 	//testHello();
-	testChaser();
+	//testChaser();
+	testCounter();
 	//testInstruction();
 }
 
@@ -129,8 +130,7 @@ int fetchEx(void) {
 			break;
 
 		case 011:    //MOV(B)
-			debug_print("MOV(B)");
-			//printf("%o\tMOV B",PC);
+			debug_print("MOV(B)\n");
 			srcValByte = getMem(src,BYTE);
 			setMem(dst,srcValByte,BYTE);
 			psw.N = 0;
@@ -346,7 +346,7 @@ int fetchEx(void) {
 		int16_t result;
 		int8_t resultByte;
 
-		debug_print("single op");
+		debug_print("single op\n");
 		switch(op) {
 			//General
 		case 050: //CLR
@@ -396,6 +396,7 @@ int fetchEx(void) {
 			break;
 
 		case 052: //INC
+			debug_print("INC\n");
 			result = getMem(dst,WORD) + 1;
 			preV = setMem(dst,result,WORD);
 			psw.N = 0;
@@ -796,7 +797,7 @@ int fetchEx(void) {
 			break;
 
 		default:
-			debug_print("no branch");
+			debug_print("no branch\n");
 			//break; //continue
 		}
 
@@ -1333,6 +1334,20 @@ void testHello() {
 	setWord(01042,0000770);
 
 	setWord(01044,0000000);
+}
+
+void testCounter() {
+	/*
+	001000		005000
+			005200 inc r0
+			000005 reset
+			000775  br .-4 back to inc r0
+	*/
+	PC = 01000;
+	setWord(01000,005000);
+	setWord(01002,005200);
+	setWord(01004,000005);
+	setWord(01006,000775);
 }
 
 void testChaser() {
