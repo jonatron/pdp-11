@@ -33,6 +33,10 @@ void load_adrs_switch() {
 	updateregsdisplay();
 }
 
+void set_data_reg(unsigned short value) {
+	datareg = value;
+}
+
 /*
 EXAM switch
 DATA = memory contents at address ADDRESS

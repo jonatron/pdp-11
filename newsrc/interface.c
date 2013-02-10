@@ -67,8 +67,10 @@ void bin(WINDOW *win, unsigned short n) {
 }
 
 void updateregsdisplay() {
-        werase(iface_subwindow);
-        waddstr(iface_subwindow, "Addr reg  :");
+	if(top == my_panels[1]) {
+        	werase(iface_subwindow);
+	}
+        waddstr(iface_subwindow,   "Addr reg  :");
         unsigned long addrreg = getaddrreg();
         bin(iface_subwindow, addrreg);
         waddstr(iface_subwindow, "\nData reg  :");
@@ -77,7 +79,9 @@ void updateregsdisplay() {
         waddstr(iface_subwindow, "\nSwitch reg:");
         signed short switchreg = getswitchreg();
         bin(iface_subwindow, switchreg);
-        wrefresh(iface_subwindow);
+	if(top == my_panels[1]) {
+	        wrefresh(iface_subwindow);
+	}
 }
 
 

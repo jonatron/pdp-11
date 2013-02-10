@@ -10,6 +10,7 @@ void start_switch();
 void dep_switch();
 char gethalt();
 void sethalt(char hlt);
+void set_data_reg(unsigned short value);
 
 unsigned short getdatareg();
 unsigned short getswitchreg();

@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <inttypes.h>
+#include <time.h>
 
 #define PC reg[7]    //Program counter
 #define SP reg[6]    //Stack pointer
@@ -65,6 +66,9 @@ int fetchEx(void) {
 	debug_print(buf);
 	sprintf(buf, "INSTR: 0%o\n", IR);
 	debug_print(buf);
+	debug_print("R0 val:");
+	toBin(reg[0]);
+	debug_print("\n");
 
 	PC+=2;    // Program counter is incremented by 2 to point to the next Word location.
 
@@ -78,6 +82,13 @@ int fetchEx(void) {
 	else if (IR == 000005) {
 		//sleep
 		debug_print("RESET\n");
+		struct timespec req, rem;
+		req.tv_sec = 0;
+		req.tv_nsec = 70000000; //70 ms
+		//DATA = r0
+		set_data_reg(reg[0]);
+		updateregsdisplay();
+		nanosleep(&req, &rem);
 	}
 
 	// Branch on microtest (BUT).
@@ -598,13 +609,19 @@ int fetchEx(void) {
 			debug_print("ROL\n");
 			preV = getMem(dst,WORD);
 			result = (uint16_t) preV << 1;
-			if(psw.C == 1)
+			if(psw.C == 1) {
+				debug_print("psw.c == 1, result |= 1\n");
 				result |= 1;
+			}
 			setMem(dst,result,WORD);
 			psw.N = 0;
 			psw.Z = 0;
-			if(preV < 0)
+			if(preV < 0) {
+				debug_print("setting psw.c = 1\n");
 				psw.C = 1;
+			}else {
+				psw.C = 0;
+			}
 			if(result < 0)
 				psw.N = 1;
 			if(result == 0)

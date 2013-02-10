@@ -55,6 +55,7 @@ int main(int argc, const char* argv[]) {
 	sprintf(buf, "char %zu short %zu int %zu long %zu\n", sizeof(char), sizeof(short), sizeof(int), sizeof(long));
 	debug_print(buf);
 	while(1) {
+		if(0)
 		{
 			//run at a certain number of instructions per seconds
 			instruction_count++;
