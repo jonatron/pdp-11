@@ -2,6 +2,7 @@
 #include "terminal.h"
 #include "coremem.h"
 #include "cpu.h"
+#include "console.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -10,12 +11,21 @@
 #include <unistd.h>
 #include <time.h>
 #include <inttypes.h>
+#include <signal.h>
+
 
 
 int INSTRUCTIONS_PER_SEC = 300000;
 int NSLEEP_EVERY = 3000;
 
+
+void sighandler(int sig) {
+	endwin();
+	exit(EXIT_SUCCESS);
+}
+
 int main(int argc, const char* argv[]) {
+	signal(SIGINT, &sighandler); //capture ctrl+c
 	pthread_t termthrd;
 	setup_interface();
 	int rc = pthread_create(&termthrd, NULL, interface_loop, NULL);
@@ -37,11 +47,12 @@ int main(int argc, const char* argv[]) {
 
 	initializeDeviceIO();
 	configureDevice(DL11io, RCSR, XBUF);
+	configureDevice(consoleio, SWITCH, SWITCH);
 	initCpu();
 	debug_print("running fetchex loop\n");
 	debug_print("size of ");
 	char buf[50];
-	sprintf(buf, "char %zu short %zu int %zu long %zu", sizeof(char), sizeof(short), sizeof(int), sizeof(long));
+	sprintf(buf, "char %zu short %zu int %zu long %zu\n", sizeof(char), sizeof(short), sizeof(int), sizeof(long));
 	debug_print(buf);
 	while(1) {
 		{
@@ -76,6 +87,6 @@ int main(int argc, const char* argv[]) {
 		//halt = gethalt();
 
 	}
-
+	endwin();
 	return (EXIT_SUCCESS);
 }

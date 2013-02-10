@@ -1,7 +1,7 @@
 #include "console.h"
-#include "CoreMem.h"
+#include "coremem.h"
 #include "interface.h"
-#include "Cpu.h"
+#include "cpu.h"
 #include <string.h>
 #include <curses.h>
 extern WINDOW *tt;
@@ -51,7 +51,7 @@ run one instruction when halted
 void cont_switch() {
 	if(halt) {
 		fetchEx();
-		wprintw(tt, "c");
+		debug_print("CONT SWITCH PRESSED!");
 	}
 }
 

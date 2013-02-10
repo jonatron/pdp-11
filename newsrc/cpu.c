@@ -36,6 +36,7 @@ void testInterrupt(void);
 void printBusReq(void);
 void toBin(uint16_t);
 void testHello(void);
+void testChaser();
 void testInstruction(void);
 
 
@@ -45,7 +46,8 @@ void initCpu() {
 	configureDevice(cpuStatus, 0777776, 0777776);
 	debug_print("initCpu\n");
 	//Test method calls.
-	testHello();
+	//testHello();
+	testChaser();
 	//testInstruction();
 }
 
@@ -57,6 +59,12 @@ int fetchEx(void) {
 	interruptCPU();      //Check for interrupts.
 
 	IR = getWord(PC);    // Instruction Placed in the Instruction Register.
+	char buf[50];
+
+	sprintf(buf, "PC: 0%o\n", PC);
+	debug_print(buf);
+	sprintf(buf, "INSTR: 0%o\n", IR);
+	debug_print(buf);
 
 	PC+=2;    // Program counter is incremented by 2 to point to the next Word location.
 
@@ -65,6 +73,11 @@ int fetchEx(void) {
 	//halt
 	if (IR == 0) {
 		return 1;
+	}
+	//RESET
+	else if (IR == 000005) {
+		//sleep
+		debug_print("RESET\n");
 	}
 
 	// Branch on microtest (BUT).
@@ -310,43 +323,8 @@ int fetchEx(void) {
 			break;
 		}
 	}
-
-
-	//Branches
-	else if ((IR & 0103400)) {
-		uint16_t op = IR >> 8;
-		int8_t offset = IR & 0xFF;
-		debug_print("branches\n");
-
-		switch(op) {
-			//Branches
-		case 01:    //BR
-			debug_print("BR\n");
-			PC = (PC) + (2 * offset);
-			break;
-
-		case 03:    //BEQ
-			debug_print("BEQ\n");
-			if (psw.Z == 1) {
-				PC = (PC) + (2 * offset);
-			}
-			break;
-
-		case 0200:   //BPL
-			debug_print("BPL\n");
-			if (psw.N == 1) {
-				PC = (PC) + (2 * offset);
-			}
-			break;
-
-		default:
-			break; //continue
-		}
-	}
-
-
-	// Then check to see if it is a single operand instruction.
-	else if ((IR & 0107700) && ((IR & 070000) == 0)) {
+	// either single operand or branch
+	else  {
 		uint16_t op = IR >> 6;
 		uint16_t dst = IR & 077;
 
@@ -617,6 +595,7 @@ int fetchEx(void) {
 			break;
 
 		case 061: //ROL
+			debug_print("ROL\n");
 			preV = getMem(dst,WORD);
 			result = (uint16_t) preV << 1;
 			if(psw.C == 1)
@@ -768,6 +747,42 @@ int fetchEx(void) {
 		default:
 			break;
 		}
+
+		//not a single op, so is a branch
+
+		op = IR >> 8;
+		int8_t offset = IR & 0xFF;
+		debug_print("branches\n");
+
+		switch(op) {
+			//Branches
+		case 01:    //BR
+			debug_print("BR\n");
+			char buf[50];
+			sprintf(buf, "offset: %d", offset);
+			debug_print(buf);
+			PC = (PC) + (2 * offset);
+			break;
+
+		case 03:    //BEQ
+			debug_print("BEQ\n");
+			if (psw.Z == 1) {
+				PC = (PC) + (2 * offset);
+			}
+			break;
+
+		case 0200:   //BPL
+			debug_print("BPL\n");
+			if (psw.N == 1) {
+				PC = (PC) + (2 * offset);
+			}
+			break;
+
+		default:
+			debug_print("no branch");
+			//break; //continue
+		}
+
 	}
 	return 0;
 }
@@ -1303,6 +1318,21 @@ void testHello() {
 	setWord(01044,0000000);
 }
 
+void testChaser() {
+	/*Location	Contents	Opcode		Comment
+	001000		012700		mov #1,r0	Load 1 into R0
+	001002		000001
+	001004		006100		rol r0		Rotate R0 left
+	001006		000005		reset		Initialise bus (70ms)
+	001010		000775		br .-4		Loop back to 'rol r0'*/
+	PC = 01000;
+	setWord(01000,012700);
+	setWord(01002,000001);
+	setWord(01004,006100);
+	setWord(01006,000005);
+	setWord(01010,000775);
+}
+
 
 
 //Test some instructions.
@@ -1464,9 +1494,9 @@ void toBin(uint16_t n) {
 	i = 1<<(sizeof(n) * 8 - 1);
 	while (i > 0) {
 		if (n & i)
-			;//waddstr(iface, "1");
+			debug_print("1");
 		else
-			;//waddstr(iface, "0");;
+			debug_print("0");
 		i >>= 1;
 	}
 }

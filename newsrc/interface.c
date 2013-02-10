@@ -1,9 +1,12 @@
 #include "interface.h"
+#include "console.h"
 
 #include <panel.h>
 #include <string.h>
 #include <pthread.h>
 #include <unistd.h>
+
+
 
 
 #define NLINES 25
@@ -13,8 +16,8 @@
 //A lot of code stolen from "NCURSES Programming HOWTO"
 
 WINDOW *my_wins[3];
-WINDOW *debug_pad, *debug_subpad;
-WINDOW *debug_subwindow, *tty_subwindow;
+WINDOW *debug_pad/*, *debug_subpad*/;
+WINDOW *debug_subwindow, *tty_subwindow, *iface_subwindow;
 PANEL  *my_panels[3];
 PANEL  *top;
 
@@ -28,7 +31,9 @@ void debug_print(char *str) {
 	pthread_mutex_lock(&lock);
 	waddstr(debug_pad, str);
 	copywin(debug_pad, debug_subwindow, pad_pos, 0, 0, 0, NLINES - 5, NCOLS - 5, FALSE);
-	wrefresh(debug_subwindow);
+	if(top == my_panels[2]) {
+		wrefresh(debug_subwindow);
+	}
 	pthread_mutex_unlock(&lock);
 }
 
@@ -48,6 +53,33 @@ void tty_printch(char ch) {
 	wrefresh(tty_subwindow);
 	pthread_mutex_unlock(&lock);
 }
+
+void bin(WINDOW *win, unsigned short n) {
+        unsigned int i;
+        i = 1<<(sizeof(n) * 8 - 1);
+        while (i > 0) {
+                if (n & i)
+                        waddstr(win, "1");
+                else
+                        waddstr(win, "0");
+                i >>= 1;
+        }
+}
+
+void updateregsdisplay() {
+        werase(iface_subwindow);
+        waddstr(iface_subwindow, "Addr reg  :");
+        unsigned long addrreg = getaddrreg();
+        bin(iface_subwindow, addrreg);
+        waddstr(iface_subwindow, "\nData reg  :");
+        unsigned short datareg = getdatareg();
+        bin(iface_subwindow, datareg);
+        waddstr(iface_subwindow, "\nSwitch reg:");
+        signed short switchreg = getswitchreg();
+        bin(iface_subwindow, switchreg);
+        wrefresh(iface_subwindow);
+}
+
 
 
 void setup_interface() {
@@ -133,6 +165,9 @@ void *interface_loop() {
 				wrefresh(debug_subwindow);
 				pthread_mutex_unlock(&lock);
 	                        break;
+			case 'u':
+				updateregsdisplay();
+				break;
 		}
 		pthread_mutex_lock(&lock);
 		update_panels();
@@ -160,6 +195,7 @@ void init_wins(WINDOW **wins, int n) {
 			break;
 		case 1:
 			sprintf(label, "Emulator Interface");
+			iface_subwindow = derwin(wins[i], NLINES - 4, NCOLS - 4, 3, 2);
 			break;
 		case 2:
 			sprintf(label, "Debug");
