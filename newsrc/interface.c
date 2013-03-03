@@ -9,7 +9,7 @@
 
 
 
-#define NLINES 25
+#define NLINES 35
 #define NCOLS 70
 #define PADLINES 100
 
@@ -171,7 +171,10 @@ void *interface_loop() {
 	                        break;
 			case 'u':
 				updateregsdisplay();
-				break;
+			default:
+				if(top == my_panels[0]) {
+					on_keypress(ch);
+				}
 		}
 		pthread_mutex_lock(&lock);
 		update_panels();

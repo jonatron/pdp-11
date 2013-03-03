@@ -49,7 +49,8 @@ void initCpu() {
 	//Test method calls.
 	//testHello();
 	//testChaser();
-	testCounter();
+	testMultiplier();
+	//testCounter();
 	//testInstruction();
 }
 
@@ -67,9 +68,9 @@ int fetchEx(void) {
 	debug_print(buf);
 	sprintf(buf, "INSTR: 0%o\n", IR);
 	debug_print(buf);
-	debug_print("R0 val:");
-	toBin(reg[0]);
-	debug_print("\n");
+	//debug_print("R0 val:");
+	//toBin(reg[0]);
+	//debug_print("\n");
 
 	PC+=2;    // Program counter is incremented by 2 to point to the next Word location.
 
@@ -323,7 +324,7 @@ int fetchEx(void) {
 			setMem(dst,result,WORD);
 			psw.N = 0;
 			psw.Z = 0;
-			psw.V = 0;
+ 			psw.V = 0;
 			if(result < 0)
 				psw.N = 1;
 			if(result == 0)
@@ -339,6 +340,8 @@ int fetchEx(void) {
 		uint16_t op = IR >> 6;
 		uint16_t dst = IR & 077;
 
+		uint32_t regNum = (IR & 0700) >> 6;
+
 		int16_t preV;
 		int8_t preVByte;
 
@@ -346,9 +349,46 @@ int fetchEx(void) {
 		int16_t result;
 		int8_t resultByte;
 
-		debug_print("single op\n");
+		//debug_print("jump/subroutine\n");
+		sprintf(buf, "IR&0177770: 0%o\n", IR & 0177770);
+		debug_print(buf);
+		if((IR & 0177770) == 0200) {
+			debug_print("RTS\n");
+			//assume PC
+			PC = getWord(SP);
+			SP = SP + 2;
+		}
+		switch(IR & 0177000) {
+		case 04000:
+			debug_print("JSR\n");
+			//assume index mode & pc
+			uint16_t tmp = PC + getWord(PC) + 2;
+			sprintf(buf, "jsr tmp: 0%o\n", tmp);
+			debug_print(buf);
+
+			SP = SP - 2; //stack expands downwards.
+                        setWord(SP, PC);
+			PC = tmp;
+
+			//sprintf(buf, "jsr pc (dst): 0%o\n", dst);
+			//debug_print(buf);
+			//uint16_t pc = getMem(dst, WORD);
+			//sprintf(buf, "jsr pc getmem(dst): 0%o\n", pc);
+			//debug_print(buf);
+			//uint16_t push_stack = (4 << 3) | 6;
+			//sprintf(buf, "push_stack: 0%o\n", push_stack);
+			//debug_print(buf);
+			//setMem(push_stack, reg[regNum], WORD);
+			//reg[regNum] = PC;
+			//PC = pc;
+			break;
+		default:
+			;//debug_print("not jump/subroutine\n");
+		}
+
+		//debug_print("single op\n");
 		switch(op) {
-			//General
+		//General
 		case 050: //CLR
 			debug_print("CLR\n");
 			setMem(dst, 0, WORD);
@@ -500,11 +540,14 @@ int fetchEx(void) {
 			break;
 
 		case 01057: //TST(B)
+			debug_print("TSTB\n");
 			psw.N = 0;
 			psw.Z = 0;
 			psw.V = 0;
 			psw.C = 0;
 			resultByte = getMem(dst,BYTE);
+			sprintf(buf, "resultByte: decimal %d .\n", resultByte);
+			debug_print(buf);
 			if(resultByte < 0) {
 				psw.N = 1;
 			}
@@ -617,11 +660,10 @@ int fetchEx(void) {
 			setMem(dst,result,WORD);
 			psw.N = 0;
 			psw.Z = 0;
+			psw.C = 0;
 			if(preV < 0) {
 				debug_print("setting psw.c = 1\n");
 				psw.C = 1;
-			}else {
-				psw.C = 0;
 			}
 			if(result < 0)
 				psw.N = 1;
@@ -638,6 +680,7 @@ int fetchEx(void) {
 			setMem(dst,resultByte,BYTE);
 			psw.N = 0;
 			psw.Z = 0;
+			psw.C = 0;
 			if(preVByte < 0)
 				psw.C = 1;
 			if(resultByte < 0)
@@ -770,7 +813,7 @@ int fetchEx(void) {
 
 		op = IR >> 8;
 		int8_t offset = IR & 0xFF;
-		debug_print("branches\n");
+		//debug_print("branches\n");
 
 		switch(op) {
 			//Branches
@@ -791,8 +834,11 @@ int fetchEx(void) {
 
 		case 0200:   //BPL
 			debug_print("BPL\n");
-			if (psw.N == 1) {
+			if (psw.N == 0) {
+				debug_print("BPL N==0\n");
 				PC = (PC) + (2 * offset);
+			}else{
+				debug_print("BPL N==1\n");
 			}
 			break;
 
@@ -1377,6 +1423,84 @@ void testInstruction() {
 	psw.V = 1;
 	psw.C = 1;
 	setWord(01000,05702);
+}
+
+void testMultiplier() {
+/*machine program		assembler program
+addr	contents
+			icsr=177560	/ input control and status
+			ibuf=177562	/ input buffer
+			ocsr=177564	/ output control and status
+			obuf=177566	/ output buffer*/
+//000000			.=400^.
+
+//000000			.=400^.
+PC = 000400;
+setWord(000400, 012706); //			mov	$160000,sp	/ initialize stack
+setWord(000402, 0160000); //
+setWord(000404, 0112700); //		loop:	movb	$'*,r0 / out the prompt 
+setWord(000406, 000052); //
+setWord(000410, 004767); //			jsr	pc,out ###0(000)(100)(111)(110)(111)
+			//                                                    R    D    D
+			// R7 + 0114 (PC+decimal 38)
+
+setWord(000412, 000114); //1
+setWord(000414, 004767); //2			jsr	pc,in	/ read first digit
+setWord(000416,  000124); //3
+setWord(000420, 012702); //4			mov	$0-'0,r2 / convert from ascii to int
+setWord(000422, 0177720); //5
+setWord(000424, 060002); //6			add	r0,r2   / r2=first digit
+setWord(000426, 004767); //7			jsr	pc,in	/ read second digit
+setWord(000430, 000112); //8
+setWord(000432, 012703); //9			mov	$0-'0,r3 / convert from ascii to int
+setWord(000434, 0177720); //10
+setWord(000436, 060003); //11			add	r0,r3	/ r3=second digit
+setWord(000440, 004767); //12			jsr	pc,in	/ read carriage return
+setWord(000442,  000100); //13
+setWord(000444, 012700); //14			mov	$12,r0	/ out line feed
+setWord(000446, 000012); //15
+setWord(000450, 004767); //16			jsr	pc,out
+setWord(000452, 000054); //17
+setWord(000454, 070203); //18			mul	r3,r2	/ r2=0, r3=r2*r3
+setWord(000456, 071227); //19			div 	$12,r2	/ r2=high digit, r3=low digit
+setWord(000460, 000012); //20
+setWord(000462, 010200); //21			mov	r2,r0	/ convert high dig. to ascii
+setWord(000464, 062700); //22			add	$'0,r0	/ and out
+setWord(000466, 000060); //23
+setWord(000470, 004767); //24			jsr	pc,out
+setWord(000472, 000034); //25
+setWord(000474, 010300); //26			mov	r3,r0	/ convert low digit to ascii
+setWord(000476, 062700); //27			add	$'0,r0	/ and out
+setWord(000500,  000060); //28
+setWord(000502, 004767); //29			jsr	pc,out	
+setWord(000504,  000022); //30
+setWord(000506, 012700); //31			mov	$12,r0	/ out line feed
+setWord(000510, 000012); //32
+setWord(000512, 004767); //33			jsr	pc,out
+setWord(000514, 000012); //34
+setWord(000516, 012700); //35			mov	$15,r0	/ out carriage return
+setWord(000520, 000015); //36
+setWord(000522, 004767); //37			jsr	pc,out
+setWord(000524,  000002); //38
+setWord(000526, 0x01D6); //			br	loop ---
+
+setWord(000530, 0105737); //		out:	tstb	*$ocsr	/ wait until last character
+setWord(000532, 0177564); //
+setWord(000534, 0x80FD); //			bpl	out	/   is sent to the printer (if positive/left bit = 0, go to out)
+setWord(000536, 010037); //			mov	r0,*$obuf / send this character
+setWord(000540, 0177566); //
+setWord(000542, 000207); //			rts	pc ---
+
+setWord(000544, 0105737); //		in:	tstb	*$icsr  / wait until next character
+setWord(000546, 0177560); //
+setWord(000550, 0x80FD); //			bpl	in	/   is sent from the keyboard
+setWord(000552, 0113700); //			movb	*$ibuf,r0 / in this character
+setWord(000554, 0177562); //
+setWord(000556, 004767); //			jsr	pc,out	/ and print it
+setWord(000560,  0177746); //
+setWord(000562, 000207); //			rts	pcsetWord(, // )
+
+
 }
 
 

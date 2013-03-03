@@ -48,6 +48,8 @@ int main(int argc, const char* argv[]) {
 	initializeDeviceIO();
 	configureDevice(DL11io, RCSR, XBUF);
 	configureDevice(consoleio, SWITCH, SWITCH);
+	setWord(RCSR, 1<<7);
+	setWord(XCSR, 1<<7);
 	initCpu();
 	debug_print("running fetchex loop\n");
 	debug_print("size of ");
@@ -82,6 +84,7 @@ int main(int argc, const char* argv[]) {
 		if(!halt) {
 			//debug_print("fetchex");
 			halt = fetchEx();
+			//sleep(1);
 			//sethalt(halt);
 			//lineclock();
 		}

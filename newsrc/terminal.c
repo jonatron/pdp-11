@@ -19,6 +19,7 @@ void on_keypress(unsigned char key) {
 	}
 	//set receiver done bit (7) in RCSR
 	rcsr |= (1 << 7);
+	debug_print("on_keypress\n");
 
 	//if receiver interrupt enable bit (6) is set in RCSR, fire interrupt
 	if((rcsr & (1 << 6)) != 0) {
@@ -29,6 +30,7 @@ void on_keypress(unsigned char key) {
 
 uint16_t DL11io(const char * command, uint32_t addr, uint16_t value) {
 	if(!strcmp(command, "read") && addr == RBUF) {
+		debug_print("read rbuf");
 		//clear receiver done bit (7) in RCSR
 		rcsr &= ~(1 << 7);
 
@@ -49,9 +51,18 @@ uint16_t DL11io(const char * command, uint32_t addr, uint16_t value) {
 		xcsr |= 1 << 7;
 		//busRequest(&BR4, 064); - breaks hello world at the moment
 	} else if(!strcmp(command, "read") && addr == RCSR) {
+		debug_print("read rcsr\n");
 		return rcsr;
 	} else if(!strcmp(command, "read") && addr == XCSR) {
+		debug_print("read xcsr\n");
+			char buf[50];
+                        sprintf(buf, "xcsr: %d\n", xcsr);
+                        debug_print(buf);
 		return xcsr;
+	}else if(!strcmp(command, "write") && addr == XCSR) {
+		xcsr = value;
+	}else if(!strcmp(command, "write") && addr == RCSR) {
+		rcsr = value;
 	}
 	return 0;
 }
