@@ -48,7 +48,7 @@ int main(int argc, const char* argv[]) {
 	initializeDeviceIO();
 	configureDevice(DL11io, RCSR, XBUF);
 	configureDevice(consoleio, SWITCH, SWITCH);
-	setWord(RCSR, 1<<7);
+	//setWord(RCSR, 1<<7);
 	setWord(XCSR, 1<<7);
 	initCpu();
 	debug_print("running fetchex loop\n");
@@ -85,6 +85,9 @@ int main(int argc, const char* argv[]) {
 			//debug_print("fetchex");
 			halt = fetchEx();
 			//sleep(1);
+			req.tv_sec = 0;
+			req.tv_nsec = 10000000; //10ms
+			nanosleep(&req, &rem);
 			//sethalt(halt);
 			//lineclock();
 		}

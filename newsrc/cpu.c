@@ -64,10 +64,10 @@ int fetchEx(void) {
 	IR = getWord(PC);    // Instruction Placed in the Instruction Register.
 	char buf[50];
 
-	sprintf(buf, "PC: 0%o\n", PC);
+	sprintf(buf, "PC: 0%o ", PC);
 	debug_print(buf);
-	sprintf(buf, "INSTR: 0%o\n", IR);
-	debug_print(buf);
+	//sprintf(buf, "INSTR: 0%o\n", IR);
+	//debug_print(buf);
 	//debug_print("R0 val:");
 	//toBin(reg[0]);
 	//debug_print("\n");
@@ -112,6 +112,91 @@ int fetchEx(void) {
 
 		int16_t dstVal;
 		int8_t dstValByte;
+
+		uint8_t r = (IR & 0000700) >> 6;
+
+		uint16_t tmpand;
+
+		switch(IR & 0177000) {
+		case 070000: // MUL
+			tmpand = (IR & 0177000);
+			sprintf(buf, "\nIR & 0177000: %o", tmpand);
+			debug_print(buf);
+			debug_print("MUL\n");
+			srcVal = getMem(dst, WORD);
+			uint8_t r = (IR & 0000700) >> 6;
+			int32_t result = reg[r] * srcVal;
+			psw.V = 0;
+			psw.N = 0;
+			psw.C = 0;
+			if(result > 0177777 || result < ~0177777)
+				psw.C = 1;
+			if(result < 0)
+				psw.N = 1;
+
+			if (r % 2 == 0) {
+				reg[r] = (result >> 16) & 0177777;
+				reg[r + 1] = result & 0177777;
+				debug_print("MUL % 2\n");
+	                        sprintf(buf, "r in octal: %o .\n", reg[r]);
+				debug_print(buf);
+	                        sprintf(buf, "r+1 in octal: %o .\n", reg[r+1]);
+				debug_print(buf);
+			}
+			else {
+				reg[r] = result & 0177777;
+			}
+			break;
+		case 071000: //DIV
+			debug_print("DIV\n");
+			sprintf(buf, "r: %d \n", r);
+			debug_print(buf);
+
+	                        sprintf(buf, "reg[r] in octal: %o .\n", reg[r]);
+				debug_print(buf);
+	                        sprintf(buf, "reg[r+1] in octal: %o .\n", reg[r+1]);
+				debug_print(buf);
+
+			uint32_t source = reg[r] << 16 | reg[r+1];
+			uint16_t divisor = getMem(dst, BYTE);
+			sprintf(buf, "Source: %o \n", source);
+			debug_print(buf);
+			sprintf(buf, "Divisor: %o \n", divisor);
+			debug_print(buf);
+
+			if (divisor) {
+				if (abs(reg[r]) > abs(divisor)) {
+					psw.V = 1;
+				}
+				else {
+					debug_print("FOO");
+					reg[r] = source / divisor;
+					reg[r + 1] = source % divisor;
+					psw.Z = 0;
+					if(reg[r] == 0)
+						psw.Z = 1;
+					psw.N = 0;
+					if(reg[r] < 0)
+						psw.N = 1;
+				}
+				psw.C = 1;
+			}
+			else {
+				// todo: trap division by zero
+				psw.V = 1;
+				psw.C = 1;
+			}
+
+	                        sprintf(buf, "reg[r] in octal: %o .\n", reg[r]);
+				debug_print(buf);
+	                        sprintf(buf, "reg[r+1] in octal: %o .\n", reg[r+1]);
+				debug_print(buf);
+
+			//setWord(PC, 0);
+			//sprintf(buf, "srcVal: 0%o \n", srcVal);
+			//debug_print(buf);
+			break;
+		}
 
 		switch(op) {
 
@@ -350,8 +435,8 @@ int fetchEx(void) {
 		int8_t resultByte;
 
 		//debug_print("jump/subroutine\n");
-		sprintf(buf, "IR&0177770: 0%o\n", IR & 0177770);
-		debug_print(buf);
+		//sprintf(buf, "IR&0177770: 0%o\n", IR & 0177770);
+		//debug_print(buf);
 		if((IR & 0177770) == 0200) {
 			debug_print("RTS\n");
 			//assume PC
@@ -363,24 +448,13 @@ int fetchEx(void) {
 			debug_print("JSR\n");
 			//assume index mode & pc
 			uint16_t tmp = PC + getWord(PC) + 2;
-			sprintf(buf, "jsr tmp: 0%o\n", tmp);
-			debug_print(buf);
+			//sprintf(buf, "jsr tmp: 0%o\n", tmp);
+			//debug_print(buf);
 
 			SP = SP - 2; //stack expands downwards.
                         setWord(SP, PC);
 			PC = tmp;
 
-			//sprintf(buf, "jsr pc (dst): 0%o\n", dst);
-			//debug_print(buf);
-			//uint16_t pc = getMem(dst, WORD);
-			//sprintf(buf, "jsr pc getmem(dst): 0%o\n", pc);
-			//debug_print(buf);
-			//uint16_t push_stack = (4 << 3) | 6;
-			//sprintf(buf, "push_stack: 0%o\n", push_stack);
-			//debug_print(buf);
-			//setMem(push_stack, reg[regNum], WORD);
-			//reg[regNum] = PC;
-			//PC = pc;
 			break;
 		default:
 			;//debug_print("not jump/subroutine\n");
@@ -819,9 +893,8 @@ int fetchEx(void) {
 			//Branches
 		case 01:    //BR
 			debug_print("BR\n");
-			char buf[50];
-			sprintf(buf, "offset: %d", offset);
-			debug_print(buf);
+			//sprintf(buf, "offset: %d", offset);
+			//debug_print(buf);
 			PC = (PC) + (2 * offset);
 			break;
 
@@ -843,8 +916,8 @@ int fetchEx(void) {
 			break;
 
 		default:
-			debug_print("no branch\n");
-			//break; //continue
+			//debug_print("no branch\n");
+			break; //continue
 		}
 
 	}
