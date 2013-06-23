@@ -7,6 +7,8 @@
 #include <unistd.h>
 
 
+#include <wiringPi.h>
+#include <mcp23017.h>
 
 
 #define NLINES 35
@@ -26,6 +28,13 @@ int pad_pos = MAX_PAD_POS;
 
 
 pthread_mutex_t lock;
+
+
+#define STATE_MENU 0
+#define STATE_PROGRAM_SWITCH 1
+char ifstate;
+unsigned short current_switch;
+unsigned char switch_bitcount;
 
 void debug_print(char *str) {
 	pthread_mutex_lock(&lock);
@@ -56,19 +65,24 @@ void tty_printch(char ch) {
 
 void bin(WINDOW *win, unsigned short n) {
         unsigned int i;
+	char counter;
         i = 1<<(sizeof(n) * 8 - 1);
+	counter = 0;
         while (i > 0) {
                 if (n & i)
                         waddstr(win, "1");
                 else
                         waddstr(win, "0");
                 i >>= 1;
+		if(counter % 3 == 0)
+			waddstr(win, " ");
+		counter++;
         }
 }
 
 void updateregsdisplay() {
 	if(top == my_panels[1]) {
-        	werase(iface_subwindow);
+		werase(iface_subwindow);
 	}
         waddstr(iface_subwindow,   "Addr reg  :");
         unsigned long addrreg = getaddrreg();
@@ -82,6 +96,7 @@ void updateregsdisplay() {
 	if(top == my_panels[1]) {
 	        wrefresh(iface_subwindow);
 	}
+	touchwin(my_wins[1]);
 }
 
 
@@ -130,7 +145,73 @@ void setup_interface() {
 
 	pthread_mutex_unlock(&lock);
 
+
+	/* gpio */
+	mcp23017Setup(100, 0x20);
+	pinMode(108, OUTPUT);
+	digitalWrite(108, 1);
+
 }
+
+void iface_keypress(char ch) {
+        if(ifstate == STATE_MENU) {
+                switch(ch) {
+                        case 'r':
+                                updateregsdisplay();
+                        break;
+                        case 's':
+                                ifstate = STATE_PROGRAM_SWITCH;
+                                waddstr(iface_subwindow, "\n Enter switch register in binary and press enter\n");
+                                switch_bitcount = 0;
+                                current_switch = 0;
+                        break;
+                        case 'd':
+                                dep_switch();
+                                waddstr(iface_subwindow, "\n dep switch pressed \n");
+                        break;
+                        case 'e':
+                                exam_switch();
+                                waddstr(iface_subwindow, "\n exam switch pressed \n");
+                        break;
+                        case 'l':
+                                load_adrs_switch();
+                                waddstr(iface_subwindow, "\n load switch pressed \n");
+                        break;
+                        case 'a':
+                                enable_switch();
+                                waddstr(iface_subwindow, "\n enable switch pressed \n");
+                        break;
+                        case 'c':
+                                cont_switch();
+                                waddstr(iface_subwindow, "\n cont switch pressed \n");
+                        break;
+                }
+        }
+        else if(ifstate == STATE_PROGRAM_SWITCH) {
+                if((ch == '0' || ch == '1') && switch_bitcount < 16) {
+                        waddch(iface_subwindow, ch);
+                        switch_bitcount++;
+                        if(ch == '1')
+                                current_switch |= 1 << (16 - switch_bitcount);
+                }
+                else if(ch == 10) { //enter
+                        setWord(SWITCH, current_switch);
+                        ifstate = STATE_MENU;
+			updateregsdisplay();
+                        iface_printmenu();
+                }
+        }
+        wrefresh(iface_subwindow);
+}
+
+void iface_printmenu() {
+        waddstr(iface_subwindow, "\nMenu: \n r: update address and data registers \n s: modify switch register"
+        " \n d: press dep switch \n e: press exam switch \n l: press load switch"
+        " \n a: press enable switch \n c: press cont switch");
+        wrefresh(iface_subwindow);
+}
+
+
 void *interface_loop() {
 	int ch;
 	while(ch != KEY_F(1)) {
@@ -144,37 +225,43 @@ void *interface_loop() {
 			nanosleep(&req, &rem);
 			continue;
 		}
-		switch(ch) {
-			case 9:
-				top = (PANEL *)panel_userptr(top);
-				pthread_mutex_lock(&lock);
-				top_panel(top);
-				pthread_mutex_unlock(&lock);
-				break;
-			case KEY_UP:
-				pthread_mutex_lock(&lock);
-				if(pad_pos >= 1) {
-					pad_pos--;
+		if(ch == 9) { //tab
+			top = (PANEL *)panel_userptr(top);
+			pthread_mutex_lock(&lock);
+			top_panel(top);
+			pthread_mutex_unlock(&lock);
+		}
+		else {
+			if(top == my_panels[2]) { //debug window
+				if(ch == KEY_UP) {
+					pthread_mutex_lock(&lock);
+					if(pad_pos >= 1) {
+						pad_pos--;
+					}
+					copywin(debug_pad, debug_subwindow, pad_pos, 0, 0, 0, NLINES - 5, NCOLS - 5, FALSE);
+					wrefresh(debug_subwindow);
+					pthread_mutex_unlock(&lock);
 				}
-				copywin(debug_pad, debug_subwindow, pad_pos, 0, 0, 0, NLINES - 5, NCOLS - 5, FALSE);
-				wrefresh(debug_subwindow);
-				pthread_mutex_unlock(&lock);
-				break;
-			case KEY_DOWN:
-				pthread_mutex_lock(&lock);
-				if(pad_pos < MAX_PAD_POS) {
-					pad_pos++;
+				if(ch == KEY_DOWN) {
+					pthread_mutex_lock(&lock);
+					if(pad_pos < MAX_PAD_POS) {
+						pad_pos++;
+					}
+					copywin(debug_pad, debug_subwindow, pad_pos, 0, 0, 0, NLINES - 5, NCOLS - 5, FALSE);
+					wrefresh(debug_subwindow);
+					pthread_mutex_unlock(&lock);
 				}
-				copywin(debug_pad, debug_subwindow, pad_pos, 0, 0, 0, NLINES - 5, NCOLS - 5, FALSE);
-				wrefresh(debug_subwindow);
-				pthread_mutex_unlock(&lock);
-	                        break;
-			case 'u':
-				updateregsdisplay();
-			default:
-				if(top == my_panels[0]) {
-					on_keypress(ch);
-				}
+			}
+			if(top == my_panels[1]) { //iface window
+				iface_keypress(ch);
+				//if(ch == 'u') {
+				//	updateregsdisplay();
+				//}
+				//wrefresh(iface_subwindow);
+			}
+			if(top == my_panels[0]) { //tty window
+				on_keypress(ch);
+			}
 		}
 		pthread_mutex_lock(&lock);
 		update_panels();
@@ -206,12 +293,9 @@ void init_wins(WINDOW **wins, int n) {
 			break;
 		case 2:
 			sprintf(label, "Debug");
-			//WINDOW *newpad(int nlines, int ncols);
 			debug_pad = newpad(100, NCOLS - 4);
-			//WINDOW *derwin(WINDOW *orig, int nlines, int ncols, int begin_y, int begin_x);
 			debug_subwindow = derwin(wins[i], NLINES - 4, NCOLS - 4, 3, 2);
 			wmove(debug_pad, 99, 0);
-			//scrollok(debug_subwindow, 1);
 			scrollok(debug_pad, 1);
 			break;
 		}

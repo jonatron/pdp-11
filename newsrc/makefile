@@ -1,6 +1,6 @@
 COMPILER = gcc
 CCFLAGS = -Wall -g
-LINKFLAGS = -lpanel -lncurses -lpthread -lrt
+LINKFLAGS = -lpanel -lncurses -lpthread -lrt -lwiringPi
 
 all: main
 
