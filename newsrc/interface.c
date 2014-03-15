@@ -145,12 +145,67 @@ void setup_interface() {
 
 	pthread_mutex_unlock(&lock);
 
+	iface_printmenu();
+
 
 	/* gpio */
 	mcp23017Setup(100, 0x20);
-	pinMode(108, OUTPUT);
-	digitalWrite(108, 1);
+	mcp23017Setup(200, 0x21);
+	mcp23017Setup(300, 0x22);
+	mcp23017Setup(400, 0x23);
+	mcp23017Setup(500, 0x24);
 
+	int i;
+
+	for(i = 100; i <= 115; i++) {
+		pinMode(i, INPUT);
+		pullUpDnControl (i, PUD_UP);
+	}
+
+	for(i = 200; i <= 208; i++) {
+		pinMode(i, INPUT);
+		pullUpDnControl (i, PUD_UP);
+	}
+
+	/*int i;
+	for(i = 209;i <= 215; i++) {
+		pinMode(i, OUTPUT);
+		digitalWrite(i, 1);
+	}
+
+	for(i = 300;i <= 315; i++) {
+		pinMode(i, OUTPUT);
+		digitalWrite(i, 1);
+	}
+	for(i = 400;i <= 415; i++) {
+		pinMode(i, OUTPUT);
+		digitalWrite(i, 1);
+	}
+	for(i = 500;i <= 501; i++) {
+		pinMode(i, OUTPUT);
+		digitalWrite(i, 1);
+	}*/
+
+
+}
+
+
+void print_switches() {
+        int i;
+	char swbuf[80];
+	char tmpbuf[2];
+
+        for(i = 100; i <= 115; i++) {
+		sprintf(tmpbuf, "%d", digitalRead(i));
+		strcat(swbuf, tmpbuf);
+	}
+        /*for(i = 200; i <= 208; i++) {
+      		sprintf(tmpbuf, "%d", digitalRead(i));
+		strcat(swbuf, tmpbuf);
+        }*/
+	waddstr(iface_subwindow, "\n");
+	waddstr(iface_subwindow, swbuf);
+	wrefresh(iface_subwindow);
 }
 
 void iface_keypress(char ch) {
@@ -185,6 +240,9 @@ void iface_keypress(char ch) {
                                 cont_switch();
                                 waddstr(iface_subwindow, "\n cont switch pressed \n");
                         break;
+			case 'g':
+				print_switches();
+			break;
                 }
         }
         else if(ifstate == STATE_PROGRAM_SWITCH) {
