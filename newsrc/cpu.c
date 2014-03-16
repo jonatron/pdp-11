@@ -48,8 +48,8 @@ void initCpu() {
 	debug_print("initCpu\n");
 	//Test method calls.
 	//testHello();
-	//testChaser();
-	testMultiplier();
+	testChaser();
+	//testMultiplier();
 	//testCounter();
 	//testInstruction();
 }

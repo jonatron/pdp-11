@@ -97,6 +97,53 @@ void updateregsdisplay() {
 	        wrefresh(iface_subwindow);
 	}
 	touchwin(my_wins[1]);
+
+	/*
+DATA
+209 # 210 | 211 | 212 # 213 | 214 | 215 #  308 | 309 | 310 # 311 | 312 | 313 # 314 | 315 | 405
+
+ADDRESS
+408 | 409 | 410 # 411 | 412 | 413 # 414 | 415 | 307 # 306 | 305 | 304 # 303 | 302 | 301 # 300 | 407 | 406
+*/
+	digitalWrite(209, datareg >> 15 & 1);
+	digitalWrite(210, datareg >> 14 & 1);
+	digitalWrite(211, datareg >> 13 & 1);
+	digitalWrite(212, datareg >> 12 & 1);
+	digitalWrite(213, datareg >> 11 & 1);
+	digitalWrite(214, datareg >> 10 & 1);
+	digitalWrite(215, datareg >> 9 & 1);
+	digitalWrite(208, datareg >> 8 & 1);
+	digitalWrite(309, datareg >> 7 & 1);
+	digitalWrite(310, datareg >> 6 & 1);
+	digitalWrite(311, datareg >> 5 & 1);
+	digitalWrite(312, datareg >> 4 & 1);
+	digitalWrite(313, datareg >> 3 & 1);
+	digitalWrite(314, datareg >> 2 & 1);
+	digitalWrite(315, datareg >> 1 & 1);
+	digitalWrite(405, datareg & 1);
+
+
+        digitalWrite(408, addrreg >> 17 & 1);
+        digitalWrite(409, addrreg >> 16 & 1);
+        digitalWrite(410, addrreg >> 15 & 1);
+        digitalWrite(411, addrreg >> 14 & 1);
+        digitalWrite(412, addrreg >> 13 & 1);
+        digitalWrite(413, addrreg >> 12 & 1);
+        digitalWrite(414, addrreg >> 11 & 1);
+        digitalWrite(415, addrreg >> 10 & 1);
+        digitalWrite(307, addrreg >> 9 & 1);
+        digitalWrite(306, addrreg >> 8 & 1);
+        digitalWrite(305, addrreg >> 7 & 1);
+        digitalWrite(304, addrreg >> 6 & 1);
+        digitalWrite(303, addrreg >> 5 & 1);
+        digitalWrite(302, addrreg >> 4 & 1);
+        digitalWrite(301, addrreg >> 3 & 1);
+        digitalWrite(300, addrreg >> 2 & 1);
+        digitalWrite(407, addrreg >> 1 & 1);
+        digitalWrite(406, addrreg & 1);
+
+
+
 }
 
 
@@ -167,12 +214,11 @@ void setup_interface() {
 		pullUpDnControl (i, PUD_UP);
 	}
 
-	/*int i;
+	/*
 	for(i = 209;i <= 215; i++) {
 		pinMode(i, OUTPUT);
 		digitalWrite(i, 1);
 	}
-
 	for(i = 300;i <= 315; i++) {
 		pinMode(i, OUTPUT);
 		digitalWrite(i, 1);
