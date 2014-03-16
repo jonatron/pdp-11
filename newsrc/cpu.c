@@ -48,7 +48,7 @@ void initCpu() {
 	debug_print("initCpu\n");
 	//Test method calls.
 	//testHello();
-	testChaser();
+	//testChaser();
 	//testMultiplier();
 	//testCounter();
 	//testInstruction();

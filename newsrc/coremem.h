@@ -29,7 +29,7 @@ void printMem(const char * type, uint16_t startAddr, uint16_t endAddr);
 /* Initialize device function pointers to zero */
 void initializeDeviceIO(void);
 
-int8_t configureDevice(uint16_t (*deviceFunction) (const char *, uint32_t, uint16_t), uint32_t startAddr, uint32_t endAddr);
+int8_t configureDevice(uint32_t (*deviceFunction) (const char *, uint32_t, uint32_t), uint32_t startAddr, uint32_t endAddr);
 
 uint16_t io(const char * command, uint32_t addr, uint16_t newWord);
 

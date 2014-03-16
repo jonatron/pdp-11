@@ -9,11 +9,11 @@ extern WINDOW *tt;
 
 unsigned short datareg; //data register - contents of this is diplayed on console
 unsigned long addrreg; //18 bit address register - contents of this is displayed on console
-unsigned short switchreg;
+unsigned int switchreg;
 
 char halt = 0;
 
-unsigned short consoleio(const char * command, unsigned int addr, unsigned short value) {
+unsigned short consoleio(const char * command, unsigned int addr, unsigned int value) {
 	updateregsdisplay();
 	if(!strcmp(command, "read") && addr == SWITCH) {
 		return switchreg;
@@ -22,6 +22,10 @@ unsigned short consoleio(const char * command, unsigned int addr, unsigned short
 		switchreg = value;
 	}
 	return 0;
+}
+
+void set_switch_reg(unsigned int swr) {
+	switchreg = swr;
 }
 
 /*
@@ -101,7 +105,7 @@ unsigned short getdatareg() {
 	return datareg;
 }
 
-unsigned short getswitchreg() {
+unsigned int getswitchreg() {
 	return switchreg;
 }
 

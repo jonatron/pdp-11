@@ -63,7 +63,7 @@ void tty_printch(char ch) {
 	pthread_mutex_unlock(&lock);
 }
 
-void bin(WINDOW *win, unsigned short n) {
+void bin(WINDOW *win, unsigned int n) {
         unsigned int i;
 	char counter;
         i = 1<<(sizeof(n) * 8 - 1);
@@ -237,20 +237,33 @@ void setup_interface() {
 
 
 void print_switches() {
-        int i;
-	char swbuf[80];
-	char tmpbuf[2];
+	unsigned int switch_reg = 0;
 
-        for(i = 100; i <= 115; i++) {
-		sprintf(tmpbuf, "%d", digitalRead(i));
-		strcat(swbuf, tmpbuf);
-	}
-        /*for(i = 200; i <= 208; i++) {
-      		sprintf(tmpbuf, "%d", digitalRead(i));
-		strcat(swbuf, tmpbuf);
-        }*/
+	switch_reg = 0;
+	switch_reg |= digitalRead(206);
+	switch_reg |= digitalRead(207) << 1;
+	switch_reg |= digitalRead(115) << 2;
+	switch_reg |= digitalRead(114) << 3;
+	switch_reg |= digitalRead(113) << 4;
+	switch_reg |= digitalRead(112) << 5;
+	switch_reg |= digitalRead(111) << 6;
+	switch_reg |= digitalRead(110) << 7;
+	switch_reg |= digitalRead(109) << 8;
+	switch_reg |= digitalRead(108) << 9;
+	switch_reg |= digitalRead(100) << 10;
+	switch_reg |= digitalRead(101) << 11;
+	switch_reg |= digitalRead(102) << 12;
+	switch_reg |= digitalRead(103) << 13;
+	switch_reg |= digitalRead(104) << 14;
+	switch_reg |= digitalRead(105) << 15;
+	switch_reg |= digitalRead(106) << 16;
+	switch_reg |= digitalRead(107) << 17;
+
+	set_switch_reg(switch_reg);
+
+	bin(iface_subwindow, switch_reg);
+
 	waddstr(iface_subwindow, "\n");
-	waddstr(iface_subwindow, swbuf);
 	wrefresh(iface_subwindow);
 }
 

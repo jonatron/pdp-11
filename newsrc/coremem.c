@@ -221,7 +221,7 @@ void initializeDeviceIO(void) {
 }
 
 /* Configure the address range used by an IO device */
-int8_t configureDevice(uint16_t (*deviceFunction) (const char *, uint32_t, uint16_t), uint32_t startAddr, uint32_t endAddr) {
+int8_t configureDevice(uint32_t (*deviceFunction) (const char *, uint32_t, uint32_t), uint32_t startAddr, uint32_t endAddr) {
 
 //char configureDevice(uint16_t (*deviceFunction) (const char *, unsigned int, uint16_t), unsigned int startAddr, unsigned int endAddr) {
 
