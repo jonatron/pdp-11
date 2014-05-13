@@ -255,6 +255,9 @@ void print_switches() {
 	switch_reg |= digitalRead(106) << 16;
 	switch_reg |= digitalRead(107) << 17;
 
+	switch_reg = ~switch_reg; //invert because i'm too lazy to turn switches round
+	switch_reg = switch_reg & 0777777;
+
 	set_switch_reg(switch_reg);
 
 	bin(iface_subwindow, switch_reg);

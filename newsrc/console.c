@@ -18,13 +18,14 @@ unsigned int switchreg;
 char halt = 0;
 
 void check_switches() {
-	char start = digitalRead(200);
-	char halt = digitalRead(202);
-	char cont = digitalRead(203);
-	char exam = digitalRead(204);
-	char load = digitalRead(205);
-	char dep = digitalRead(208);
+	char start = digitalRead(200) ^ 1;
+	char halt = digitalRead(202) ^ 1;
+	char cont = digitalRead(203) ^ 1;
+	char exam = digitalRead(204) ^ 1;
+	char load = digitalRead(205) ^ 1;
+	char dep = digitalRead(208) ^ 1;
 	char buf[50];
+
 	/*
 	sprintf(buf, "cont switch in octal: %o\n", cont);
 	debug_print(buf);
@@ -35,11 +36,11 @@ void check_switches() {
 	sprintf(buf, "exam switch in octal: %o\n", exam);
 	debug_print(buf);
 	sprintf(buf, "halt switch in octal: %o\n", halt);
-	debug_print(buf);*/
+	debug_print(buf);
 	sprintf(buf, "dep switch in octal: %o\n", dep);
 	debug_print(buf);
 
-
+	print_switches();*/
 }
 
 unsigned short consoleio(const char * command, unsigned int addr, unsigned int value) {
