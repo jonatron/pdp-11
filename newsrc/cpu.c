@@ -64,7 +64,7 @@ int fetchEx(void) {
 	IR = getWord(PC);    // Instruction Placed in the Instruction Register.
 	char buf[50];
 
-	sprintf(buf, "PC: 0%o ", PC);
+	sprintf(buf, "PC: 0%o \n", PC);
 	debug_print(buf);
 	//sprintf(buf, "INSTR: 0%o\n", IR);
 	//debug_print(buf);

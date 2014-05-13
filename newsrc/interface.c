@@ -112,7 +112,7 @@ ADDRESS
 	digitalWrite(213, datareg >> 11 & 1);
 	digitalWrite(214, datareg >> 10 & 1);
 	digitalWrite(215, datareg >> 9 & 1);
-	digitalWrite(208, datareg >> 8 & 1);
+	digitalWrite(308, datareg >> 8 & 1);
 	digitalWrite(309, datareg >> 7 & 1);
 	digitalWrite(310, datareg >> 6 & 1);
 	digitalWrite(311, datareg >> 5 & 1);
@@ -214,23 +214,19 @@ void setup_interface() {
 		pullUpDnControl (i, PUD_UP);
 	}
 
-	/*
+
 	for(i = 209;i <= 215; i++) {
 		pinMode(i, OUTPUT);
-		digitalWrite(i, 1);
 	}
 	for(i = 300;i <= 315; i++) {
 		pinMode(i, OUTPUT);
-		digitalWrite(i, 1);
 	}
 	for(i = 400;i <= 415; i++) {
 		pinMode(i, OUTPUT);
-		digitalWrite(i, 1);
 	}
 	for(i = 500;i <= 501; i++) {
 		pinMode(i, OUTPUT);
-		digitalWrite(i, 1);
-	}*/
+	}
 
 
 }
@@ -307,9 +303,9 @@ void iface_keypress(char ch) {
         else if(ifstate == STATE_PROGRAM_SWITCH) {
                 if((ch == '0' || ch == '1') && switch_bitcount < 16) {
                         waddch(iface_subwindow, ch);
-                        switch_bitcount++;
                         if(ch == '1')
-                                current_switch |= 1 << (16 - switch_bitcount);
+                                current_switch |= 1 << (switch_bitcount);
+			switch_bitcount++;
                 }
                 else if(ch == 10) { //enter
                         setWord(SWITCH, current_switch);

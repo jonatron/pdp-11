@@ -2,6 +2,7 @@
 
 unsigned short consoleio(const char * command, unsigned int addr, unsigned int value);
 
+void check_switches();
 void load_adrs_switch();
 void exam_switch();
 void cont_switch();

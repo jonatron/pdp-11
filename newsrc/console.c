@@ -4,6 +4,10 @@
 #include "cpu.h"
 #include <string.h>
 #include <curses.h>
+
+#include <wiringPi.h>
+#include <mcp23017.h>
+
 extern WINDOW *tt;
 
 
@@ -12,6 +16,31 @@ unsigned long addrreg; //18 bit address register - contents of this is displayed
 unsigned int switchreg;
 
 char halt = 0;
+
+void check_switches() {
+	char start = digitalRead(200);
+	char halt = digitalRead(202);
+	char cont = digitalRead(203);
+	char exam = digitalRead(204);
+	char load = digitalRead(205);
+	char dep = digitalRead(208);
+	char buf[50];
+	/*
+	sprintf(buf, "cont switch in octal: %o\n", cont);
+	debug_print(buf);
+	sprintf(buf, "start switch in octal: %o\n", start);
+	debug_print(buf);
+	sprintf(buf, "load switch in octal: %o\n", load);
+	debug_print(buf);
+	sprintf(buf, "exam switch in octal: %o\n", exam);
+	debug_print(buf);
+	sprintf(buf, "halt switch in octal: %o\n", halt);
+	debug_print(buf);*/
+	sprintf(buf, "dep switch in octal: %o\n", dep);
+	debug_print(buf);
+
+
+}
 
 unsigned short consoleio(const char * command, unsigned int addr, unsigned int value) {
 	updateregsdisplay();
