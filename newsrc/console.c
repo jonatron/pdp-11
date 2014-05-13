@@ -26,6 +26,34 @@ void check_switches() {
 	char dep = digitalRead(208) ^ 1;
 	char buf[50];
 
+	unsigned int switch_reg = 0;
+
+	switch_reg = 0;
+	switch_reg |= digitalRead(206);
+	switch_reg |= digitalRead(207) << 1;
+	switch_reg |= digitalRead(115) << 2;
+	switch_reg |= digitalRead(114) << 3;
+	switch_reg |= digitalRead(113) << 4;
+	switch_reg |= digitalRead(112) << 5;
+	switch_reg |= digitalRead(111) << 6;
+	switch_reg |= digitalRead(110) << 7;
+	switch_reg |= digitalRead(109) << 8;
+	switch_reg |= digitalRead(108) << 9;
+	switch_reg |= digitalRead(100) << 10;
+	switch_reg |= digitalRead(101) << 11;
+	switch_reg |= digitalRead(102) << 12;
+	switch_reg |= digitalRead(103) << 13;
+	switch_reg |= digitalRead(104) << 14;
+	switch_reg |= digitalRead(105) << 15;
+	switch_reg |= digitalRead(106) << 16;
+	switch_reg |= digitalRead(107) << 17;
+
+	switch_reg = ~switch_reg; //invert because i'm too lazy to turn switches round
+	switch_reg = switch_reg & 0777777;
+
+	set_switch_reg(switch_reg);
+
+
 	/*
 	sprintf(buf, "cont switch in octal: %o\n", cont);
 	debug_print(buf);

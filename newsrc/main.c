@@ -83,15 +83,18 @@ int main(int argc, const char* argv[]) {
 		//fetchex
 		if(!halt) {
 			//debug_print("fetchex");
-			check_switches();
 			halt = fetchEx();
 			//sleep(1);
 			req.tv_sec = 1;
 			req.tv_nsec = 10000000; //10ms
-			nanosleep(&req, &rem);
+			//nanosleep(&req, &rem);
 			//sethalt(halt);
 			//lineclock();
 		}
+		else {
+			sleep(1);
+		}
+		check_switches();
 		halt = gethalt();
 
 	}

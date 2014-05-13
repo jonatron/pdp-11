@@ -80,6 +80,13 @@ void bin(WINDOW *win, unsigned int n) {
         }
 }
 
+void print_switches() {
+	unsigned long switch_reg = getswitchreg();
+	bin(iface_subwindow, switch_reg);
+	waddstr(iface_subwindow, "\n");
+	wrefresh(iface_subwindow);
+}
+
 void updateregsdisplay() {
 	if(top == my_panels[1]) {
 		werase(iface_subwindow);
@@ -232,39 +239,6 @@ void setup_interface() {
 }
 
 
-void print_switches() {
-	unsigned int switch_reg = 0;
-
-	switch_reg = 0;
-	switch_reg |= digitalRead(206);
-	switch_reg |= digitalRead(207) << 1;
-	switch_reg |= digitalRead(115) << 2;
-	switch_reg |= digitalRead(114) << 3;
-	switch_reg |= digitalRead(113) << 4;
-	switch_reg |= digitalRead(112) << 5;
-	switch_reg |= digitalRead(111) << 6;
-	switch_reg |= digitalRead(110) << 7;
-	switch_reg |= digitalRead(109) << 8;
-	switch_reg |= digitalRead(108) << 9;
-	switch_reg |= digitalRead(100) << 10;
-	switch_reg |= digitalRead(101) << 11;
-	switch_reg |= digitalRead(102) << 12;
-	switch_reg |= digitalRead(103) << 13;
-	switch_reg |= digitalRead(104) << 14;
-	switch_reg |= digitalRead(105) << 15;
-	switch_reg |= digitalRead(106) << 16;
-	switch_reg |= digitalRead(107) << 17;
-
-	switch_reg = ~switch_reg; //invert because i'm too lazy to turn switches round
-	switch_reg = switch_reg & 0777777;
-
-	set_switch_reg(switch_reg);
-
-	bin(iface_subwindow, switch_reg);
-
-	waddstr(iface_subwindow, "\n");
-	wrefresh(iface_subwindow);
-}
 
 void iface_keypress(char ch) {
         if(ifstate == STATE_MENU) {
