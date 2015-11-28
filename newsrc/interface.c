@@ -5,7 +5,7 @@
 #include <string.h>
 #include <pthread.h>
 #include <unistd.h>
-
+#include <time.h>
 
 #include <wiringPi.h>
 #include <mcp23017.h>
@@ -63,11 +63,14 @@ void tty_printch(char ch) {
 	pthread_mutex_unlock(&lock);
 }
 
-void bin(WINDOW *win, unsigned int n) {
+void bin(WINDOW *win, unsigned long n) {
         unsigned int i;
 	char counter;
         i = 1<<(sizeof(n) * 8 - 1);
-	counter = 0;
+	counter = 2;
+	//char buf[20];
+	//sprintf(buf, "%u", n);
+	//waddstr(win, buf);
         while (i > 0) {
                 if (n & i)
                         waddstr(win, "1");
@@ -98,7 +101,7 @@ void updateregsdisplay() {
         unsigned short datareg = getdatareg();
         bin(iface_subwindow, datareg);
         waddstr(iface_subwindow, "\nSwitch reg:");
-        signed short switchreg = getswitchreg();
+        signed long switchreg = getswitchreg();
         bin(iface_subwindow, switchreg);
 	if(top == my_panels[1]) {
 	        wrefresh(iface_subwindow);
@@ -112,22 +115,23 @@ DATA
 ADDRESS
 408 | 409 | 410 # 411 | 412 | 413 # 414 | 415 | 307 # 306 | 305 | 304 # 303 | 302 | 301 # 300 | 407 | 406
 */
-	digitalWrite(209, datareg >> 15 & 1);
-	digitalWrite(210, datareg >> 14 & 1);
-	digitalWrite(211, datareg >> 13 & 1);
-	digitalWrite(212, datareg >> 12 & 1);
-	digitalWrite(213, datareg >> 11 & 1);
-	digitalWrite(214, datareg >> 10 & 1);
-	digitalWrite(215, datareg >> 9 & 1);
-	digitalWrite(308, datareg >> 8 & 1);
-	digitalWrite(309, datareg >> 7 & 1);
-	digitalWrite(310, datareg >> 6 & 1);
-	digitalWrite(311, datareg >> 5 & 1);
-	digitalWrite(312, datareg >> 4 & 1);
-	digitalWrite(313, datareg >> 3 & 1);
-	digitalWrite(314, datareg >> 2 & 1);
-	digitalWrite(315, datareg >> 1 & 1);
-	digitalWrite(405, datareg & 1);
+
+        digitalWrite(209, datareg >> 15 & 1);
+        digitalWrite(210, datareg >> 14 & 1);
+        digitalWrite(211, datareg >> 13 & 1);
+        digitalWrite(212, datareg >> 12 & 1);
+        digitalWrite(213, datareg >> 11 & 1);
+        digitalWrite(214, datareg >> 10 & 1);
+        digitalWrite(215, datareg >> 9 & 1);
+        digitalWrite(308, datareg >> 8 & 1);
+        digitalWrite(309, datareg >> 7 & 1);
+        digitalWrite(310, datareg >> 6 & 1);
+        digitalWrite(311, datareg >> 5 & 1);
+        digitalWrite(312, datareg >> 4 & 1);
+        digitalWrite(313, datareg >> 3 & 1);
+        digitalWrite(314, datareg >> 2 & 1);
+        digitalWrite(315, datareg >> 1 & 1);
+        digitalWrite(405, datareg & 1);
 
 
         digitalWrite(408, addrreg >> 17 & 1);
@@ -202,6 +206,7 @@ void setup_interface() {
 	iface_printmenu();
 
 
+
 	/* gpio */
 	mcp23017Setup(100, 0x20);
 	mcp23017Setup(200, 0x21);
@@ -215,13 +220,10 @@ void setup_interface() {
 		pinMode(i, INPUT);
 		pullUpDnControl (i, PUD_UP);
 	}
-
 	for(i = 200; i <= 208; i++) {
 		pinMode(i, INPUT);
 		pullUpDnControl (i, PUD_UP);
 	}
-
-
 	for(i = 209;i <= 215; i++) {
 		pinMode(i, OUTPUT);
 	}

@@ -14,6 +14,6 @@ void sethalt(char hlt);
 void set_data_reg(unsigned short value);
 
 unsigned short getdatareg();
-unsigned int getswitchreg();
+unsigned long getswitchreg();
 unsigned long getaddrreg();
 

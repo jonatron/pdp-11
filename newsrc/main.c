@@ -43,7 +43,7 @@ int main(int argc, const char* argv[]) {
 	//sleep(1);
 	debug_print("about to initializeDeviceIO\n");
 	tty_print("tty print test\n");
-	int halt = 0;
+	int halt = 1;
 
 	initializeDeviceIO();
 	configureDevice(DL11io, RCSR, XBUF);
@@ -56,8 +56,9 @@ int main(int argc, const char* argv[]) {
 	char buf[50];
 	sprintf(buf, "char %zu short %zu int %zu long %zu\n", sizeof(char), sizeof(short), sizeof(int), sizeof(long));
 	debug_print(buf);
+	updateregsdisplay();
 	while(1) {
-		if(0)
+		if(1)
 		{
 			//run at a certain number of instructions per seconds
 			instruction_count++;

@@ -13,20 +13,39 @@ extern WINDOW *tt;
 
 unsigned short datareg; //data register - contents of this is diplayed on console
 unsigned long addrreg; //18 bit address register - contents of this is displayed on console
-unsigned int switchreg;
+unsigned long switchreg;
 
-char halt = 0;
+char halt = 1;
+
+char last_halt = 1;
+char last_cont = 1;
+char last_exam = 1;
+char last_load = 1;
+char last_dep = 1;
 
 void check_switches() {
-	char start = digitalRead(200) ^ 1;
-	char halt = digitalRead(202) ^ 1;
-	char cont = digitalRead(203) ^ 1;
-	char exam = digitalRead(204) ^ 1;
-	char load = digitalRead(205) ^ 1;
-	char dep = digitalRead(208) ^ 1;
+	char cur_start = digitalRead(200) ^ 1;
+	char cur_halt = digitalRead(202) ^ 1;
+	char cur_cont = digitalRead(203) ^ 1;
+	char cur_exam = digitalRead(204) ^ 1;
+	char cur_load = digitalRead(205) ^ 1;
+	char cur_dep = digitalRead(208) ^ 1;
 	char buf[50];
 
-	unsigned int switch_reg = 0;
+	if(cur_halt != last_halt) {
+		sethalt(cur_halt);
+		last_halt = cur_halt;
+	}
+	if(cur_dep != last_dep) {
+		dep_switch();
+		last_dep = cur_dep;
+	}
+	if(cur_load != last_load) {
+		load_adrs_switch();
+		last_load = cur_load;
+	}
+
+	unsigned long switch_reg = 0;
 
 	switch_reg = 0;
 	switch_reg |= digitalRead(206);
@@ -34,13 +53,13 @@ void check_switches() {
 	switch_reg |= digitalRead(115) << 2;
 	switch_reg |= digitalRead(114) << 3;
 	switch_reg |= digitalRead(113) << 4;
-	switch_reg |= digitalRead(112) << 5;
+	switch_reg |= digitalRead(101) << 5;
 	switch_reg |= digitalRead(111) << 6;
 	switch_reg |= digitalRead(110) << 7;
 	switch_reg |= digitalRead(109) << 8;
 	switch_reg |= digitalRead(108) << 9;
 	switch_reg |= digitalRead(100) << 10;
-	switch_reg |= digitalRead(101) << 11;
+	switch_reg |= digitalRead(112) << 11;
 	switch_reg |= digitalRead(102) << 12;
 	switch_reg |= digitalRead(103) << 13;
 	switch_reg |= digitalRead(104) << 14;
@@ -54,21 +73,6 @@ void check_switches() {
 	set_switch_reg(switch_reg);
 
 
-	/*
-	sprintf(buf, "cont switch in octal: %o\n", cont);
-	debug_print(buf);
-	sprintf(buf, "start switch in octal: %o\n", start);
-	debug_print(buf);
-	sprintf(buf, "load switch in octal: %o\n", load);
-	debug_print(buf);
-	sprintf(buf, "exam switch in octal: %o\n", exam);
-	debug_print(buf);
-	sprintf(buf, "halt switch in octal: %o\n", halt);
-	debug_print(buf);
-	sprintf(buf, "dep switch in octal: %o\n", dep);
-	debug_print(buf);
-
-	print_switches();*/
 }
 
 unsigned short consoleio(const char * command, unsigned int addr, unsigned int value) {
@@ -82,7 +86,7 @@ unsigned short consoleio(const char * command, unsigned int addr, unsigned int v
 	return 0;
 }
 
-void set_switch_reg(unsigned int swr) {
+void set_switch_reg(unsigned long swr) {
 	switchreg = swr;
 }
 
@@ -148,6 +152,7 @@ void dep_switch() {
 	}
 	setWord(addrreg, switchreg);
 	addrreg += 2;
+	datareg = switchreg;
 	updateregsdisplay();
 }
 
@@ -163,7 +168,7 @@ unsigned short getdatareg() {
 	return datareg;
 }
 
-unsigned int getswitchreg() {
+unsigned long getswitchreg() {
 	return switchreg;
 }
 
