@@ -1,5 +1,5 @@
 pdp-11
 ======
 
-PDP-11 Emulator.
-Well it will be, once it's finished.
+Hacked together PDP-11 Emulator. See also http://jonatron.me/
+
